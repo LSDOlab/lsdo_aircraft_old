@@ -38,7 +38,6 @@ class BreguetPropellantWeightFractionComp(ArrayExplicitComponent):
         partials['propellant_weight_fraction', 'range_km'] =  tsfc / (cruise_speed * lift_to_drag_ratio) * np.exp(range_ * tsfc / (cruise_speed * lift_to_drag_ratio)) * 1e3
 
 
-
 if __name__ == '__main__':
     import numpy as np
 

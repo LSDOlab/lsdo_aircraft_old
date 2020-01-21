@@ -2,10 +2,10 @@ from distutils.core import setup
 
 
 setup(
-    name='lsdo_tada',
+    name='lsdo_aircraft',
     version='1',
     packages=[
-        'lsdo_tada',
+        'lsdo_aircraft',
     ],
     install_requires=[
         'dash==1.2.0',

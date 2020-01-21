@@ -1,0 +1,11 @@
+Breguet range comp
+==================
+
+.. embed-options-table :: lsdo_aircraft.sizing_gross_weight.breguet_range_comp , BreguetRangeComp , options
+
+Class
+-----
+
+.. autoclass:: lsdo_aircraft.sizing_gross_weight.breguet_range_comp.BreguetRangeComp
+
+  .. automethod:: lsdo_aircraft.sizing_gross_weight.breguet_range_comp.BreguetRangeComp.__init__

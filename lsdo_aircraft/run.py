@@ -2,9 +2,9 @@ from openmdao.api import Problem, IndepVarComp
 
 from lsdo_utils.api import units, constants
 
-from lsdo_tada.aircraft import Aircraft
+from lsdo_aircraft.aircraft import Aircraft
 
-from lsdo_tada.sizing_gross_weight.sizing_gross_weight_group import SizingGrossWeightGroup
+from lsdo_aircraft.sizing_gross_weight.sizing_gross_weight_group import SizingGrossWeightGroup
 
 
 shape = (2, 3)

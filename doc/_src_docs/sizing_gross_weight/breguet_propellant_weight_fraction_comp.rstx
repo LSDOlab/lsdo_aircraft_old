@@ -1,0 +1,11 @@
+Breguet propellant weight fraction comp
+=======================================
+
+.. embed-options-table :: lsdo_aircraft.sizing_gross_weight.breguet_propellant_weight_fraction_comp , BreguetPropellantWeightFractionComp , options
+
+Class
+-----
+
+.. autoclass:: lsdo_aircraft.sizing_gross_weight.breguet_propellant_weight_fraction_comp.BreguetPropellantWeightFractionComp
+
+  .. automethod:: lsdo_aircraft.sizing_gross_weight.breguet_propellant_weight_fraction_comp.BreguetPropellantWeightFractionComp.__init__

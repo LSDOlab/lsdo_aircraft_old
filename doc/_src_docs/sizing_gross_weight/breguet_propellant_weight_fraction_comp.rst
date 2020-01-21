@@ -1,5 +1,5 @@
-Gross weight comp
-=================
+Breguet propellant weight fraction comp
+=======================================
 
 .. list-table:: List of options
   :header-rows: 1
@@ -26,35 +26,10 @@ Gross weight comp
      -  None
      -  ['tuple']
      -  
-  *  -  a
-     -  <object object at 0x115617ee0>
-     -  None
-     -  ['float']
-     -  
-  *  -  c
-     -  <object object at 0x115617ee0>
-     -  None
-     -  ['float']
-     -  
-  *  -  k_vs
-     -  <object object at 0x115617ee0>
-     -  None
-     -  ['float']
-     -  
-  *  -  weight_max
-     -  100000000.0
-     -  None
-     -  ['float']
-     -  
-  *  -  num_iter
-     -  100
-     -  None
-     -  ['int']
-     -  
 
 Class
 -----
 
-.. autoclass:: lsdo_aircraft.sizing_gross_weight.gross_weight_comp.GrossWeightComp
+.. autoclass:: lsdo_aircraft.sizing_gross_weight.breguet_propellant_weight_fraction_comp.BreguetPropellantWeightFractionComp
 
-  .. automethod:: lsdo_aircraft.sizing_gross_weight.gross_weight_comp.GrossWeightComp.__init__
+  .. automethod:: lsdo_aircraft.sizing_gross_weight.breguet_propellant_weight_fraction_comp.BreguetPropellantWeightFractionComp.__init__

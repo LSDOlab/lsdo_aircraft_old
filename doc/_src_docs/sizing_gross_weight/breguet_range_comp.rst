@@ -1,5 +1,5 @@
-Sizing---gross weight group
-===========================
+Breguet range comp
+==================
 
 .. list-table:: List of options
   :header-rows: 1
@@ -16,20 +16,20 @@ Sizing---gross weight group
      -  ['csc', 'dense']
      -  None
      -  Linear solver(s) in this group, if using an assembled jacobian, will use this type.
+  *  -  distributed
+     -  False
+     -  None
+     -  None
+     -  True if the component has variables that are distributed across multiple processes.
   *  -  shape
      -  <object object at 0x115617ee0>
      -  None
      -  ['tuple']
      -  
-  *  -  aircraft
-     -  <object object at 0x115617ee0>
-     -  None
-     -  None
-     -  
 
 Class
 -----
 
-.. autoclass:: lsdo_aircraft.sizing_gross_weight.sizing_gross_weight_group.SizingGrossWeightGroup
+.. autoclass:: lsdo_aircraft.sizing_gross_weight.breguet_range_comp.BreguetRangeComp
 
-  .. automethod:: lsdo_aircraft.sizing_gross_weight.sizing_gross_weight_group.SizingGrossWeightGroup.__init__
+  .. automethod:: lsdo_aircraft.sizing_gross_weight.breguet_range_comp.BreguetRangeComp.__init__

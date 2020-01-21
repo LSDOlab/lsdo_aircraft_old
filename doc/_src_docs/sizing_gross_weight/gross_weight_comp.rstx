@@ -1,11 +1,11 @@
 Gross weight comp
 =================
 
-.. embed-options-table :: lsdo_tada.sizing_gross_weight.gross_weight_comp , GrossWeightComp , options
+.. embed-options-table :: lsdo_aircraft.sizing_gross_weight.gross_weight_comp , GrossWeightComp , options
 
 Class
 -----
 
-.. autoclass:: lsdo_tada.sizing_gross_weight.gross_weight_comp.GrossWeightComp
+.. autoclass:: lsdo_aircraft.sizing_gross_weight.gross_weight_comp.GrossWeightComp
 
-  .. automethod:: lsdo_tada.sizing_gross_weight.gross_weight_comp.GrossWeightComp.__init__
+  .. automethod:: lsdo_aircraft.sizing_gross_weight.gross_weight_comp.GrossWeightComp.__init__

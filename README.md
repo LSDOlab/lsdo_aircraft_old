@@ -19,16 +19,16 @@ Installation instructions
 
 5. Go to a directory where you want to install all your packages, and enter into terminal:
 
-  ` git clone https://github.com/lsdolab/lsdo_tada`
+  ` git clone https://github.com/lsdolab/lsdo_aircraft`
 
-6. Go into the cloned `lsdo_tada` directory (by typing `cd lsdo_tada`) and type:
+6. Go into the cloned `lsdo_aircraft` directory (by typing `cd lsdo_aircraft`) and type:
 
   `pip install -e .`
 
-7. Build documentation by going into `lsdo_tada/doc` and type:
+7. Build documentation by going into `lsdo_aircraft/doc` and type:
 
   `sphinx_auto_embed`
 
   `make html`
 
-8. You can view the docs by opening `lsdo_tada/doc/_build/html/index.html`.
+8. You can view the docs by opening `lsdo_aircraft/doc/_build/html/index.html`.

@@ -22,22 +22,22 @@ Empty weight fraction comp
      -  None
      -  True if the component has variables that are distributed across multiple processes.
   *  -  shape
-     -  <object object at 0x11b6afee0>
+     -  <object object at 0x115617ee0>
      -  None
      -  ['tuple']
      -  
   *  -  a
-     -  <object object at 0x11b6afee0>
+     -  <object object at 0x115617ee0>
      -  None
      -  ['float']
      -  
   *  -  c
-     -  <object object at 0x11b6afee0>
+     -  <object object at 0x115617ee0>
      -  None
      -  ['float']
      -  
   *  -  k_vs
-     -  <object object at 0x11b6afee0>
+     -  <object object at 0x115617ee0>
      -  None
      -  ['float']
      -  
@@ -45,6 +45,6 @@ Empty weight fraction comp
 Class
 -----
 
-.. autoclass:: lsdo_tada.sizing_gross_weight.empty_weight_fraction_comp.EmptyWeightFractionComp
+.. autoclass:: lsdo_aircraft.sizing_gross_weight.empty_weight_fraction_comp.EmptyWeightFractionComp
 
-  .. automethod:: lsdo_tada.sizing_gross_weight.empty_weight_fraction_comp.EmptyWeightFractionComp.__init__
+  .. automethod:: lsdo_aircraft.sizing_gross_weight.empty_weight_fraction_comp.EmptyWeightFractionComp.__init__

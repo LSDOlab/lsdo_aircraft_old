@@ -2,9 +2,9 @@ from openmdao.api import Group, IndepVarComp
 
 from lsdo_utils.api import LinearCombinationComp, PowerCombinationComp, constants
 
-from lsdo_tada.sizing_gross_weight.gross_weight_comp import GrossWeightComp
-from lsdo_tada.sizing_gross_weight.empty_weight_fraction_comp import EmptyWeightFractionComp
-from lsdo_tada.sizing_gross_weight.breguet_propellant_weight_fraction_comp import BreguetPropellantWeightFractionComp
+from lsdo_aircraft.sizing_gross_weight.gross_weight_comp import GrossWeightComp
+from lsdo_aircraft.sizing_gross_weight.empty_weight_fraction_comp import EmptyWeightFractionComp
+from lsdo_aircraft.sizing_gross_weight.breguet_propellant_weight_fraction_comp import BreguetPropellantWeightFractionComp
 
 
 class SizingGrossWeightGroup(Group):

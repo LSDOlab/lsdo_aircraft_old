@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-LSDO TADA
-=========
+Large-scale system design optimization framework for aircraft design (lsdo_aircraft)
+====================================================================================
 
 This is a Python software library for aircraft conceptual design of aircraft.
 
