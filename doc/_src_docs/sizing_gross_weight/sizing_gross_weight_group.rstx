@@ -1,0 +1,11 @@
+Sizing---gross weight group
+===========================
+
+.. embed-options-table :: lsdo_tada.sizing_gross_weight.sizing_gross_weight_group , SizingGrossWeightGroup , options
+
+Class
+-----
+
+.. autoclass:: lsdo_tada.sizing_gross_weight.sizing_gross_weight_group.SizingGrossWeightGroup
+
+  .. automethod:: lsdo_tada.sizing_gross_weight.sizing_gross_weight_group.SizingGrossWeightGroup.__init__

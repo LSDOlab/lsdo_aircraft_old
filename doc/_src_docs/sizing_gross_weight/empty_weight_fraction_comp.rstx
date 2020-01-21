@@ -1,0 +1,11 @@
+Empty weight fraction comp
+==========================
+
+.. embed-options-table :: lsdo_tada.sizing_gross_weight.empty_weight_fraction_comp , EmptyWeightFractionComp , options
+
+Class
+-----
+
+.. autoclass:: lsdo_tada.sizing_gross_weight.empty_weight_fraction_comp.EmptyWeightFractionComp
+
+  .. automethod:: lsdo_tada.sizing_gross_weight.empty_weight_fraction_comp.EmptyWeightFractionComp.__init__
