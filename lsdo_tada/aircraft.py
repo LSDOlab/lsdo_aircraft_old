@@ -11,6 +11,15 @@ class Aircraft(OptionsDictionary):
         ])
         self.declare('empty_weight_fraction_variable_sweep', default=False, types=bool)
         self.declare('empty_weight_fraction_weight_max', default=1.e8, types=float)
+        self.declare('battery_energy_density_Wh_kg', default=150., types=float)
+        self.declare('battery_energy_density', default=150., types=float)
+        self.declare('propulsive_efficiency', default=0.85, types=float)
+        self.declare('tsfc', default=1.e-4, types=float)
+        self.declare('propulsion_type', default='electric', values=[
+            'electric',
+            'fuel_burning',
+        ])
+
 
     def post_initialize(self):
         self.empty_weight_fraction_parameters = dict(
@@ -23,3 +32,5 @@ class Aircraft(OptionsDictionary):
             self.empty_weight_fraction_k_vs = 1.04
         else:
             self.empty_weight_fraction_k_vs = 1.
+
+        self['battery_energy_density'] = self['battery_energy_density_Wh_kg'] * units('J/kg', 'Wh/kg')
