@@ -22,22 +22,22 @@ Empty weight fraction comp
      -  None
      -  True if the component has variables that are distributed across multiple processes.
   *  -  shape
-     -  <object object at 0x10fdf5ee0>
+     -  <object object at 0x11b6afee0>
      -  None
      -  ['tuple']
      -  
   *  -  a
-     -  <object object at 0x10fdf5ee0>
+     -  <object object at 0x11b6afee0>
      -  None
      -  ['float']
      -  
   *  -  c
-     -  <object object at 0x10fdf5ee0>
+     -  <object object at 0x11b6afee0>
      -  None
      -  ['float']
      -  
   *  -  k_vs
-     -  <object object at 0x10fdf5ee0>
+     -  <object object at 0x11b6afee0>
      -  None
      -  ['float']
      -  
