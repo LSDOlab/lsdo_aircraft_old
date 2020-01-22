@@ -24,7 +24,7 @@ class BreguetPropellantWeightFractionComp(ArrayExplicitComponent):
         cruise_speed = inputs['cruise_speed']
         tsfc = inputs['tsfc']
 
-        outputs['propellant_weight_fraction'] = np.exp(range_ * tsfc / (cruise_speed * lift_to_drag_ratio)) - 1
+        outputs['propellant_weight_fraction'] = 1 - np.exp(-range_ * tsfc / (cruise_speed * lift_to_drag_ratio))
 
     def compute_partials(self, inputs, partials):
         lift_to_drag_ratio = inputs['lift_to_drag_ratio'].flatten()
@@ -32,10 +32,10 @@ class BreguetPropellantWeightFractionComp(ArrayExplicitComponent):
         cruise_speed = inputs['cruise_speed'].flatten()
         tsfc = inputs['tsfc'].flatten()
         
-        partials['propellant_weight_fraction', 'cruise_speed'] = -1 * range_ * tsfc / ((cruise_speed ** 2) * lift_to_drag_ratio) * np.exp(range_ * tsfc / (cruise_speed * lift_to_drag_ratio)) 
-        partials['propellant_weight_fraction', 'tsfc'] =  range_ / (cruise_speed * lift_to_drag_ratio) * np.exp(range_ * tsfc / (cruise_speed * lift_to_drag_ratio)) 
-        partials['propellant_weight_fraction', 'lift_to_drag_ratio'] =  -1 * range_ * tsfc / (cruise_speed * (lift_to_drag_ratio ** 2)) * np.exp(range_ * tsfc / (cruise_speed * lift_to_drag_ratio)) 
-        partials['propellant_weight_fraction', 'range_km'] =  tsfc / (cruise_speed * lift_to_drag_ratio) * np.exp(range_ * tsfc / (cruise_speed * lift_to_drag_ratio)) * 1e3
+        partials['propellant_weight_fraction', 'cruise_speed'] = -1 * range_ * tsfc / ((cruise_speed ** 2) * lift_to_drag_ratio) * np.exp(-range_ * tsfc / (cruise_speed * lift_to_drag_ratio)) 
+        partials['propellant_weight_fraction', 'tsfc'] =  range_ / (cruise_speed * lift_to_drag_ratio) * np.exp(-range_ * tsfc / (cruise_speed * lift_to_drag_ratio)) 
+        partials['propellant_weight_fraction', 'lift_to_drag_ratio'] =  -1 * range_ * tsfc / (cruise_speed * (lift_to_drag_ratio ** 2)) * np.exp(-range_ * tsfc / (cruise_speed * lift_to_drag_ratio)) 
+        partials['propellant_weight_fraction', 'range_km'] =  tsfc / (cruise_speed * lift_to_drag_ratio) * np.exp(-range_ * tsfc / (cruise_speed * lift_to_drag_ratio)) * 1e3
 
 
 if __name__ == '__main__':
@@ -45,7 +45,7 @@ if __name__ == '__main__':
 
 
     shape = (20, 30)
-    shape = (1,)
+    shape = (2, 3)
     # shape = (100,)
 
     prob = Problem()

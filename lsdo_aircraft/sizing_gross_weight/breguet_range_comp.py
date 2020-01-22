@@ -24,7 +24,7 @@ class BreguetRangeComp(ArrayExplicitComponent):
         cruise_speed = inputs['cruise_speed']
         tsfc = inputs['tsfc']
 
-        outputs['range_km'] = (cruise_speed / tsfc) * lift_to_drag_ratio * np.log(1 + (propellant_weight_fraction)) / 1.e3
+        outputs['range_km'] = -(cruise_speed / tsfc) * lift_to_drag_ratio * np.log(1 - propellant_weight_fraction) / 1.e3
 
     def compute_partials(self, inputs, partials):
         lift_to_drag_ratio = inputs['lift_to_drag_ratio'].flatten()
@@ -32,10 +32,10 @@ class BreguetRangeComp(ArrayExplicitComponent):
         cruise_speed = inputs['cruise_speed'].flatten()
         tsfc = inputs['tsfc'].flatten()
         
-        partials['range_km', 'cruise_speed'] = (1 / tsfc) * lift_to_drag_ratio * np.log(1 + (propellant_weight_fraction)) / 1.e3
-        partials['range_km', 'tsfc'] = -(cruise_speed / (tsfc ** 2.)) * lift_to_drag_ratio * np.log(1 + (propellant_weight_fraction)) / 1.e3
-        partials['range_km', 'lift_to_drag_ratio'] = ((cruise_speed / tsfc) * np.log(1 + (propellant_weight_fraction))) / 1.e3
-        partials['range_km', 'propellant_weight_fraction'] = (cruise_speed / tsfc) * lift_to_drag_ratio / (1 + (propellant_weight_fraction)) / 1.e3
+        partials['range_km', 'cruise_speed'] = -(1 / tsfc) * lift_to_drag_ratio * np.log(1 - propellant_weight_fraction) / 1.e3
+        partials['range_km', 'tsfc'] = (cruise_speed / tsfc ** 2.) * lift_to_drag_ratio * np.log(1 - propellant_weight_fraction) / 1.e3
+        partials['range_km', 'lift_to_drag_ratio'] = -((cruise_speed / tsfc) * np.log(1 - propellant_weight_fraction)) / 1.e3
+        partials['range_km', 'propellant_weight_fraction'] = (cruise_speed / tsfc) * lift_to_drag_ratio / (1 - propellant_weight_fraction) / 1.e3
 
 
 if __name__ == '__main__':
@@ -45,7 +45,7 @@ if __name__ == '__main__':
 
 
     shape = (20, 30)
-    shape = (1,)
+    shape = (2, 3)
     # shape = (100,)
 
     prob = Problem()
