@@ -26,18 +26,18 @@ import numpy as np
 shape = (2, 3)
 shape = (1,)
 
-# Propulsion_type specifies whether you're using an electric or fuel-burning aircraft. Different equations apply
+# energy_source_type specifies whether you're using an electric or fuel-burning aircraft. Different equations apply
 # based on which type you choose. 
 
-propulsion_type = 'electric'
-# propulsion_type = 'fuel_burning'
+# energy_source_type = 'electric'
+energy_source_type = 'fuel_burning'
 
 # Constants, and units are imported from lsdo_utils. Allows for the use of gravity, as well as converting between SI and Imperial units. 
 lb_N = units('lb', 'kg') / constants.g
 N_lb = 1. / lb_N
 
 # Depending on whether the aircraft is fuel-burning or electric, you need to change the values under the corresponding 'if' statement. 
-if propulsion_type == 'electric':
+if energy_source_type == 'electric':
     payload_weight = 4 * 230 * units('N', 'lbf')
     crew_weight = 1 * 230 * units('N', 'lbf')
     range_km = 100.
@@ -111,6 +111,7 @@ prob.driver.options['optimizer'] = 'SLSQP'
 prob.driver.options['tol'] = 1e-15
 prob.driver.options['disp'] = True
 
+# This is to set up a different optimizer, SNOPT, which is faster but has a difficult set-up process
 if 0:
     from openmdao.api import pyOptSparseDriver
     prob.driver = pyOptSparseDriver()
