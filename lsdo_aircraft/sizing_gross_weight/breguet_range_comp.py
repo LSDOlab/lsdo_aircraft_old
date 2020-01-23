@@ -4,6 +4,19 @@ import numpy as np
 
 class BreguetRangeComp(ArrayExplicitComponent):
 
+    """
+        This component computes the range of flight in kilometers using the Breguet Range Equation. 
+        The inputs for this component are:
+                    - lift to drag ratio 
+                    - propellant to weight fraction 
+                    - cruise speed (In meters/second)
+                    - tsfc (Thrust Specific Fuel Consumption)
+            
+        All of the values above are assumed to be in SI units, unless otherwise denoted. 
+
+    
+    """
+
     def array_initialize(self):
         pass
 

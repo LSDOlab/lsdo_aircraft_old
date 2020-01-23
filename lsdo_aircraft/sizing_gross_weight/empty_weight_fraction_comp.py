@@ -5,7 +5,11 @@ lb_N = units('lb', 'kg') / constants.g
 N_lb = 1. / lb_N
 
 class EmptyWeightFractionComp(ArrayExplicitComponent):
-
+    """
+        This component computes the appropriate empty weight fraction based on the type of aircraft selected in 'run.py'. The options that are required for this component 
+        are given in 'aircraft.py', and are defined based on the type of aircraft selected. The values for: 'a', 'c' and 'k_vs' are taken from the Raymer Empty Weight 
+        Fraction Regression. The empty weight fraction is computed based on the input 'gross_weight'.
+    """
     def array_initialize(self):
         self.options.declare('a', types=float)
         self.options.declare('c', types=float)
