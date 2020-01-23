@@ -11,13 +11,18 @@ Breguet propellant weight fraction comp
      -  Acceptable values
      -  Acceptable types
      -  Description
+  *  -  assembled_jac_type
+     -  csc
+     -  ['csc', 'dense']
+     -  None
+     -  Linear solver(s) in this group, if using an assembled jacobian, will use this type.
   *  -  distributed
      -  False
-     -  [True, False]
-     -  ['bool']
+     -  None
+     -  None
      -  True if the component has variables that are distributed across multiple processes.
   *  -  shape
-     -  <object object at 0x7f86a647b9f0>
+     -  <object object at 0x1192d7ee0>
      -  None
      -  ['tuple']
      -  
