@@ -29,25 +29,25 @@ class SizingGrossWeightGroup(Group):
 
         comp = PowerCombinationComp(
             shape=shape,
-            in_names=dict(
+            powers_dict=dict(
                 range_km=1.,
             ),
             out_name='range',
-            constant=1.e3,
+            coeff=1.e3,
         )
         self.add_subsystem('range_comp', comp, promotes=['*'])
 
-        if aircraft['propulsion_type'] == 'electric':
+        if aircraft['energy_source_type'] == 'electric':
             comp = PowerCombinationComp(
                 shape=shape,
-                in_names=dict(
+                powers_dict=dict(
                     range=1.,
                     battery_energy_density=-1.,
                     propulsive_efficiency=-1.,
                     lift_to_drag_ratio=-1.,
                 ),
                 out_name='propellant_weight_fraction',
-                constant=constants.g,
+                coeff=constants.g,
             )
             self.add_subsystem('propellant_weight_fraction_comp', comp, promotes=['*'])
         else:
