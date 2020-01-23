@@ -9,6 +9,10 @@ from lsdo_aircraft.sizing_gross_weight.breguet_propellant_weight_fraction_comp i
 
 class SizingGrossWeightGroup(Group):
 
+    """
+        This Group is a container for all the components required in the computation of gross weight of the aircraft.  
+    """
+
     def initialize(self):
         self.options.declare('shape', types=tuple)
         self.options.declare('aircraft')

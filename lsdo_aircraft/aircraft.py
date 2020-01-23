@@ -2,6 +2,10 @@ from lsdo_utils.api import OptionsDictionary, units, constants
 
 
 class Aircraft(OptionsDictionary):
+    """
+       This options dictionary defines the openmdao options that will be used for aircraft design. The options are values that help define the aircraft, 
+       but cannot be used as design variables for optimization. 
+    """
 
     def initialize(self):
         self.declare('aircraft_type', values=[

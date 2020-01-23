@@ -3,6 +3,17 @@ import numpy as np
 
 
 class BreguetPropellantWeightFractionComp(ArrayExplicitComponent):
+    """
+        This component computes the propellant weight fraction from the Breguet range equation. 
+        The inputs for this component are:
+                    - lift to drag ratio 
+                    - range_km (The range of flight in kilometers)
+                    - cruise speed (In meters/second)
+                    - tsfc (Thrust Specific Fuel Consumption)
+            
+        All of the values above are assumed to be in SI units, unless otherwise denoted. 
+
+    """
 
     def array_initialize(self):
         pass
