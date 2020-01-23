@@ -22,35 +22,47 @@ class SizingPerformanceGroup(Group):
 
         comp = IndepVarComp()
         comp.add_output('CL_max', val=aircraft['CL_max'], shape=shape)
+        comp.add_output('CL_takeoff', val=aircraft['CL_takeoff'], shape=shape)
         comp.add_output('climb_gradient', val=aircraft['climb_gradient'], shape=shape)
         comp.add_output('turn_load_factor', val=aircraft['turn_load_factor'], shape=shape)
-        comp.add_output('wing_loading', val=1., shape=shape)
-        comp.add_output('thrust_to_weight', val=1., shape=shape)
+        comp.add_output('wing_loading', val=aircraft['ref_wing_loading'], shape=shape)
+        comp.add_output('thrust_to_weight', val=aircraft['ref_thrust_to_weight'], shape=shape)
         comp.add_output('TOP', val=aircraft['TOP'], shape=shape)
         comp.add_output('takeoff_density', val=aircraft['takeoff_density'], shape=shape)
         comp.add_output('sealevel_density', val=1.225, shape=shape)
         comp.add_output('stall_speed', val=aircraft['stall_speed'], shape=shape)
         comp.add_output('climb_speed', val=aircraft['climb_speed'], shape=shape)
         comp.add_output('turn_speed', val=aircraft['turn_speed'], shape=shape)
-        comp.add_output('landing_distance_ft', val=aircraft['landing_distance_ft'] * units('m', 'ft'), shape=shape)
+        comp.add_output('landing_distance', val=aircraft['landing_distance'], shape=shape)
         comp.add_output('approach_distance', val=aircraft['approach_distance'], shape=shape)
-        comp.add_output('ref_wing_loading_lbf_ft2', val=aircraft['ref_wing_loading_lbf_ft2'], shape=shape)
+        comp.add_output('ref_wing_loading', val=aircraft['ref_wing_loading'], shape=shape)
         comp.add_output('ref_thrust_to_weight', val=aircraft['ref_thrust_to_weight'], shape=shape)
         comp.add_design_var('wing_loading', lower=0.)
         comp.add_design_var('thrust_to_weight', lower=0.)
         self.add_subsystem('inputs_comp', comp, promotes=['*'])
 
-        # 
+        #
 
         comp = PowerCombinationComp(
             shape=shape,
-            out_name='ref_wing_loading',
+            out_name='wing_loading_lbf_ft2',
             powers_dict=dict(
-                ref_wing_loading_lbf_ft2=1.,
+                wing_loading=1.,
             ),
-            coeff=units('N/m^2', 'lbf/ft^2')
+            coeff=units('lbf/ft^2', 'N/m^2'),
         )
-        self.add_subsystem('ref_wing_loading_comp', comp, promotes=['*'])
+        self.add_subsystem('wing_loading_lbf_ft2_comp', comp, promotes=['*'])
+
+        comp = PowerCombinationComp(
+            shape=shape,
+            out_name='power_to_weight',
+            powers_dict=dict(
+                thrust_to_weight=1.,
+                cruise_speed=1.,
+            ),
+            coeff=1./0.85,
+        )
+        self.add_subsystem('power_to_weight_comp', comp, promotes=['*'])
 
         comp = PowerCombinationComp(
             shape=shape,
@@ -125,6 +137,7 @@ class SizingPerformanceGroup(Group):
                     '{}_thrust_to_weight'.format(con_name): 1.,
                 },
             )
+            comp.add_constraint('{}_thrust_to_weight_constraint'.format(con_name), upper=0.)
             self.add_subsystem('{}_thrust_to_weight_constraint_comp'.format(con_name), comp, promotes=['*'])
 
         a = 0.5

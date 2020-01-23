@@ -1,4 +1,4 @@
-from openmdao.api import Problem, IndepVarComp
+from openmdao.api import Problem, IndepVarComp, ScipyOptimizeDriver
 
 from lsdo_utils.api import units, constants
 
@@ -9,6 +9,7 @@ from lsdo_aircraft.sizing_performance.sizing_performance_group import SizingPerf
 
 
 shape = (2, 3)
+shape = (1,)
 
 energy_source_type = 'electric'
 # energy_source_type = 'fuel_burning'
@@ -37,6 +38,8 @@ elif energy_source_type == 'fuel_burning':
 aircraft = Aircraft(
     aircraft_type='transport',
     empty_weight_fraction_variable_sweep=False,
+    CL_max=1.5,
+    CL_takeoff=1.5/1.21,
     battery_energy_density_Wh_kg=150.,
     propulsive_efficiency=0.85,
     tsfc=1.e-4,
@@ -76,29 +79,20 @@ group = SizingPerformanceGroup(
 )
 prob.model.add_subsystem('sizing_performance_group', group, promotes=['*'])
 
+prob.model.add_objective('sizing_performance_objective')
+
+prob.driver = ScipyOptimizeDriver()
+prob.driver.options['optimizer'] = 'SLSQP'
+prob.driver.options['tol'] = 1e-15
+prob.driver.options['disp'] = True
+
+if 0:
+    from openmdao.api import pyOptSparseDriver
+    prob.driver = pyOptSparseDriver()
+    prob.driver.options['optimizer'] = 'SNOPT'
+
 prob.setup(check=True)
 prob.run_model()
-
-print(sum([
-    prob[name]
-    for name in [
-        'payload_weight',
-        'crew_weight',
-        'empty_weight',
-        'propellant_weight',
-    ]
-]))
-for name in [
-    'payload_weight',
-    'crew_weight',
-    'empty_weight',
-    'propellant_weight',
-    'gross_weight',
-    'empty_weight_fraction',
-    'propellant_weight_fraction',
-    'range',
-    'lift_to_drag_ratio',
-    'propulsive_efficiency',
-    'battery_energy_density',
-]:
-    print(name, prob[name][0, 0])
+# prob.check_partials(compact_print=True)
+prob.run_driver()
+prob.model.list_outputs(prom_name=True)

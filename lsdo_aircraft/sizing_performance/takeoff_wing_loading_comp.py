@@ -13,7 +13,7 @@ class PropellerTakeoffWingLoadingComp(PowerCombinationComp):
                 power_to_weight=1.,
             ),
             out_name='takeoff_wing_loading',
-            coeff=units('N/m^2', 'lbf/ft^2'),
+            coeff=units('N/m^2', 'lbf/ft^2') / 745.7 * units('N', 'lbf'),
         ))
 
 

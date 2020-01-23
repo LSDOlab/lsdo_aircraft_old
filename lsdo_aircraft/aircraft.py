@@ -24,6 +24,7 @@ class Aircraft(OptionsDictionary):
             'jet',
         ])
         self.declare('CL_max', default=1.5, types=float)
+        self.declare('CL_takeoff', default=1.5, types=float)
         self.declare('climb_gradient', default=0.05, types=float)
         self.declare('turn_load_factor', default=2.5, types=float)
         self.declare('TOP', default=400., types=float)
@@ -31,10 +32,14 @@ class Aircraft(OptionsDictionary):
         self.declare('stall_speed', default=1.225, types=float)
         self.declare('climb_speed', default=1.225, types=float)
         self.declare('turn_speed', default=1.225, types=float)
-        self.declare('landing_distance_ft', default=6000., types=float)
+
+        self.declare('landing_distance', default=None, types=float, allow_none=True)
         self.declare('approach_distance', default=None, types=float, allow_none=True)
-        self.declare('ref_wing_loading_lbf_ft2', default=6000., types=float)
-        self.declare('ref_thrust_to_weight', default=6000., types=float)
+        self.declare('ref_wing_loading', default=None, types=float, allow_none=True)
+        self.declare('ref_thrust_to_weight', default=0.5, types=float)
+
+        self.declare('landing_distance_ft', default=6000., types=float)
+        self.declare('ref_wing_loading_lbf_ft2', default=100., types=float)
 
     def post_initialize(self):
         self.empty_weight_fraction_parameters = dict(
@@ -54,3 +59,7 @@ class Aircraft(OptionsDictionary):
             self['approach_distance'] = 1000. * units('m', 'ft')
         elif self['aircraft_type'] in ['ga_single', 'ga_twin']:
             self['approach_distance'] = 600. * units('m', 'ft')
+
+        self['ref_wing_loading'] = self['ref_wing_loading_lbf_ft2'] * units('N/m^2', 'lbf/ft^2')
+
+        self['landing_distance'] = self['landing_distance_ft'] * units('m', 'ft')
