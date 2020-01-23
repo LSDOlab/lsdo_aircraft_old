@@ -9,6 +9,11 @@ from lsdo_aircraft.sizing_performance.sizing_performance_group import SizingPerf
 
 import numpy as np
 
+try:
+    from lsdo_viz.api import Problem
+except:
+    pass
+
 
 # This defines the shape of all the parameters for the aircraft. By defining it as (1,), this means that you will be giving only one input for each aircraft variable. 
 # It is important to note, that the variables can either be single values, or they have to be provided in the shape that is specified. 
@@ -23,14 +28,14 @@ import numpy as np
 #      payload_weight = np.array([[4 * 230 * N_lb, 5 * 230 * N_lb, 6 * 230 * N_lb ],[4 * 230 * N_lb, 5 * 230 * N_lb, 6 * 230 * N_lb ]])
 #      range_km = np.array([[100., 100, 100] , [200, 200 , 200]])
 #   The other variables you can just remain as a single value, because the program will automatically make them into a (2, 3) matrix.
-shape = (2, 3)
-shape = (1,)
+num_sweep_points = 100
+shape = (1 + num_sweep_points,)
 
 # energy_source_type specifies whether you're using an electric or fuel-burning aircraft. Different equations apply
 # based on which type you choose. 
 
-# energy_source_type = 'electric'
-energy_source_type = 'fuel_burning'
+energy_source_type = 'electric'
+# energy_source_type = 'fuel_burning'
 
 # Constants, and units are imported from lsdo_utils. Allows for the use of gravity, as well as converting between SI and Imperial units. 
 lb_N = units('lb', 'kg') / constants.g
@@ -46,7 +51,8 @@ if energy_source_type == 'electric':
     thrust_source_type = 'propeller'
     landing_distance_ft = 8000.
     ref_wing_loading_lbf_ft2 = 25.
-    ref_thrust_to_weight = 0.6
+    ref_thrust_to_weight = 0.3
+    aircraft_type = 'ga_twin'
 elif energy_source_type == 'fuel_burning':
     payload_weight = 400 * 230 * units('N', 'lbf')
     crew_weight = 10 * 230 * units('N', 'lbf')
@@ -57,10 +63,20 @@ elif energy_source_type == 'fuel_burning':
     landing_distance_ft = 8000.
     ref_wing_loading_lbf_ft2 = 130.
     ref_thrust_to_weight = 0.3
+    aircraft_type = 'transport'
+
+wing_loading_lbf_ft2 = np.concatenate((
+    ref_wing_loading_lbf_ft2 * np.ones(1), 
+    np.linspace(0.05 * ref_wing_loading_lbf_ft2, 2 * ref_wing_loading_lbf_ft2, num_sweep_points),
+))
+thrust_to_weight = np.concatenate((
+    ref_thrust_to_weight * np.ones(1), 
+    np.linspace(0.05 * ref_thrust_to_weight, 2 * ref_thrust_to_weight, num_sweep_points),
+))
 
 # These are properties of the aircraft which do not vary during the optimization. They are stored in a dictionary (a method of storing information in python). 
 aircraft = Aircraft(
-    aircraft_type='transport', # Depending on the aircraft (ac) type, you will have a different value for empty weight 
+    aircraft_type=aircraft_type, # Depending on the aircraft (ac) type, you will have a different value for empty weight 
     empty_weight_fraction_variable_sweep=False, # If you have decided that your aircraft wing has variable sweep, then set this to True. 
     CL_max=1.5,
     CL_takeoff=1.5/1.21,
@@ -73,11 +89,14 @@ aircraft = Aircraft(
     climb_speed=cruise_speed * 0.8,
     turn_speed=cruise_speed * 0.8,
     landing_distance_ft=landing_distance_ft,
+    wing_loading_lbf_ft2=wing_loading_lbf_ft2,
+    thrust_to_weight=thrust_to_weight,
     ref_wing_loading_lbf_ft2=ref_wing_loading_lbf_ft2,
     ref_thrust_to_weight=ref_thrust_to_weight,
 )
 
 prob = Problem()
+prob.aircraft = aircraft
 
 comp = IndepVarComp()
 comp.add_output('density', val=1.225, shape=shape)
@@ -104,7 +123,7 @@ group = SizingPerformanceGroup(
 )
 prob.model.add_subsystem('sizing_performance_group', group, promotes=['*'])
 
-prob.model.add_objective('sizing_performance_objective')
+prob.model.add_objective('sizing_performance_objective', index=0)
 
 prob.driver = ScipyOptimizeDriver()
 prob.driver.options['optimizer'] = 'SLSQP'
