@@ -1,0 +1,11 @@
+Maneuver thrust to weight comp
+==============================
+
+.. embed-options-table :: lsdo_aircraft.sizing_performance.maneuver_thrust_to_weight_comp , ClimbThrustToWeightComp , options
+
+Class
+-----
+
+.. autoclass:: lsdo_aircraft.sizing_performance.maneuver_thrust_to_weight_comp.ClimbThrustToWeightComp
+
+  .. automethod:: lsdo_aircraft.sizing_performance.maneuver_thrust_to_weight_comp.ClimbThrustToWeightComp.__init__
