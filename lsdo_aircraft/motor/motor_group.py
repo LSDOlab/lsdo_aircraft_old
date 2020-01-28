@@ -269,12 +269,22 @@ class MotorGroup(Group):
 
         self.add_subsystem('ohmic_loss_comp', ohmic_loss, promotes=['*'])
 
+        iron_loss_f = PowerCombinationComp(
+            shape=shape,
+            in_names=['omega'],
+            out_name='f',
+            powers=[1.],
+            coeff=(60/(2*np.pi))
+
+        )
+        self.add_subsystem('iron_loss_f_comp', iron_loss_f, promotes=['*'])
+
         iron_loss = PowerCombinationComp(
             shape=shape,
-            in_names=['b_mg', 'stator_mass'],
+            in_names=['b_mg', 'stator_mass', 'f'],
             out_name='iron_loss',
-            powers=[2., 1.],
-            coeff=1.1 * (1400/50) ** 1.5  # rpm * number of poles/ 120 = 1400
+            powers=[2., 1., 1.5],
+            coeff=1.1 * (24/(50*120)) ** 1.5 # the number 24 represents the number of poles in the motor
         )
 
         self.add_subsystem('iron_loss_comp', iron_loss, promotes=['*'])
