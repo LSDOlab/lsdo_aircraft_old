@@ -3,7 +3,8 @@ from openmdao.api import Problem
 from lsdo_aircraft.api import PowertrainGroup, Powertrain, Preprocess, Atmosphere, SimpleBattery, SimpleMotor, SimpleRotor
 
 
-shape = (1,)
+n = 250
+shape = (n,)
 
 powertrain = Powertrain()
 
@@ -63,4 +64,19 @@ prob.model = PowertrainGroup(
 )
 prob.setup(check=True)
 prob.run_model()
-prob.model.list_outputs()
+# prob.model.list_outputs(print_arrays=True, prom_name=True)
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+prob['motor_group.mass'][:] = 20.
+prob['motor_group.normalized_torque'][:] = 1.
+prob['motor_group.angular_speed'][:] = np.linspace(0., 600., n)
+prob.run_model()
+prob.model.list_outputs(print_arrays=True, prom_name=True)
+
+plt.plot(
+    prob['motor_group.angular_speed'],
+    prob['motor_group.torque'],   
+)
+plt.show()
