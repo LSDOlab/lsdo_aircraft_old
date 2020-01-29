@@ -34,8 +34,8 @@ shape = (1 + num_sweep_points,)
 # energy_source_type specifies whether you're using an electric or fuel-burning aircraft. Different equations apply
 # based on which type you choose. 
 
-energy_source_type = 'electric'
-# energy_source_type = 'fuel_burning'
+# energy_source_type = 'electric'
+energy_source_type = 'fuel_burning'
 
 # Constants, and units are imported from lsdo_utils. Allows for the use of gravity, as well as converting between SI and Imperial units. 
 lb_N = units('lb', 'kg') / constants.g
@@ -141,3 +141,8 @@ prob.run_model()
 # prob.check_partials(compact_print=True)
 prob.run_driver()
 prob.model.list_outputs(prom_name=True)
+print(prob['gross_weight'][1:])
+
+# import matplotlib.pyplot as plt
+# plt.plot(prob['wing_loading'][1:], prob['climb_power_to_weight'][1:])
+# plt.show()

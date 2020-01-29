@@ -3,7 +3,7 @@ from lsdo_utils.api import PowerCombinationComp
 
 class StallWingLoadingComp(PowerCombinationComp):
 
-    def post_initialize(self):
+    def pre_setup(self):
         self.options.update(dict(
             powers_dict=dict(
                 CL_max=1.,
