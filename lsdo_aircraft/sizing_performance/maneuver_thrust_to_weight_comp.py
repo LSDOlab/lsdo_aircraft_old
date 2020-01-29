@@ -5,7 +5,7 @@ from lsdo_utils.api import LinearPowerCombinationComp
 
 class ClimbThrustToWeightComp(LinearPowerCombinationComp):
 
-    def post_initialize(self):
+    def pre_setup(self):
         self.options.update(dict(
             out_name='climb_thrust_to_weight',
             terms_list=[
@@ -32,7 +32,7 @@ class ClimbThrustToWeightComp(LinearPowerCombinationComp):
 
 class TurnThrustToWeightComp(LinearPowerCombinationComp):
 
-    def post_initialize(self):
+    def pre_setup(self):
         self.options.update(dict(
             out_name='turn_thrust_to_weight',
             terms_list=[

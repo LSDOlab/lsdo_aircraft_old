@@ -54,7 +54,9 @@ class Aircraft(OptionsDictionary):
         self.declare('wing_loading_lbf_ft2', default=100., types=float_array_types)
         self.declare('ref_wing_loading_lbf_ft2', default=100., types=float)
 
-    def post_initialize(self):
+        self.declare('powertrain', default=None, allow_none=True)
+
+    def pre_setup(self):
         self.empty_weight_fraction_parameters = dict(
             ga_single=(2.36, -0.18),
             ga_twin=(1.51, -0.10),

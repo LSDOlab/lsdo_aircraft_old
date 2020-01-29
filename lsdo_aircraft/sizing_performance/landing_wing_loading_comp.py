@@ -3,7 +3,7 @@ from lsdo_utils.api import LinearPowerCombinationComp, units
 
 class LandingWingLoadingComp(LinearPowerCombinationComp):
 
-    def post_initialize(self):
+    def pre_setup(self):
         self.options.update(dict(
             out_name='landing_wing_loading',
             terms_list=[
