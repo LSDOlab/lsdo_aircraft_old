@@ -56,7 +56,7 @@ class SimpleMotorGroup(Group):
             shape=shape,
             out_name='available_torque',
             in_names=['continuous_torque', 'flux_weakening_torque'],
-            rho=20.,
+            rho=1.e-1,
         )
         self.add_subsystem('available_torque_comp', comp, promotes=['*'])
 
