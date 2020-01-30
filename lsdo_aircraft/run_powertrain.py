@@ -4,7 +4,7 @@ from lsdo_aircraft.api import PowertrainGroup, Powertrain, Preprocess, Atmospher
 
 
 n = 250
-shape = (n,)
+shape = (n, n)
 
 powertrain = Powertrain()
 
@@ -69,14 +69,43 @@ prob.run_model()
 import numpy as np
 import matplotlib.pyplot as plt
 
-prob['motor_group.mass'][:] = 20.
-prob['motor_group.normalized_torque'][:] = 1.
-prob['motor_group.angular_speed'][:] = np.linspace(0., 600., n)
+torque_temp = np.linspace(0., 1., n)
+angular_speed_temp = np.linspace(0., 600., n)
+
+
+
+
+prob['motor_group.mass'] = 20
+prob['motor_group.normalized_torque'] = np.tile(torque_temp, (n, 1))
+prob['motor_group.angular_speed'] = np.tile(angular_speed_temp.T, (n, 1))
 prob.run_model()
 prob.model.list_outputs(print_arrays=True, prom_name=True)
 
-plt.plot(
+plt.figure(1)
+plt.scatter(
     prob['motor_group.angular_speed'],
-    prob['motor_group.torque'],   
+    prob['motor_group.torque'],
+)
+plt.show()
+
+plt.figure(2)
+plt.scatter(
+    prob['motor_group.angular_speed'],
+    prob['motor_group.motor_efficiency'],
+)
+plt.show()
+
+plt.figure(4)
+plt.scatter(
+    prob['motor_group.torque'],
+    prob['motor_group.motor_efficiency'],
+)
+plt.show()
+
+
+plt.figure(3)
+plt.contour(
+    [prob['motor_group.angular_speed'][0], prob['motor_group.torque'][:, 0], ],
+    prob['motor_group.motor_efficiency'], levels=np.logspace(0, 100, 10)
 )
 plt.show()

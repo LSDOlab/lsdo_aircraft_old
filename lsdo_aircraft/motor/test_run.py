@@ -30,7 +30,7 @@ print('stator_mass:', prob['stator_mass'])
 # print('rotor_mass_temp_2:', prob['rotor_mass_temp_2'])
 # print('rotor_mass:', prob['rotor_mass'])
 # print('shaft_mass:', prob['shaft_mass'])
-# print('total_mass:', prob['total_mass'])
+print('total_mass:', prob['total_mass'])
 
 print('iron loss:', prob['iron_loss'])
 print('ohmic loss:', prob['ohmic_loss'])
