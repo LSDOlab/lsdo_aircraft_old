@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-from openmdao.api import Group
+from openmdao.api import Group, IndepVarComp
 
 from lsdo_utils.api import PowerCombinationComp
 
