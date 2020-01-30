@@ -1,6 +1,6 @@
 import numpy as np
 
-from uam_mdo_v1.utils.array_comps.array_explicit_component import ArrayExplicitComponent
+from lsdo_utils.comps.array_explicit_component import ArrayExplicitComponent
 
 
 class FlowAngleComp(ArrayExplicitComponent):

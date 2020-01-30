@@ -4,7 +4,8 @@ from lsdo_aircraft.api import PowertrainGroup, Powertrain, Preprocess, Atmospher
 from lsdo_aircraft.api import SimpleBattery, SimpleMotor, SimpleRotor, SimpleReciprocating, SimpleTurbofan, SimpleTurboprop
 
 
-shape = (1,)
+n = 100
+shape = (n, n)
 
 powertrain = Powertrain()
 
@@ -92,7 +93,53 @@ group = PowertrainGroup(
     powertrain=powertrain,
 )
 prob.model.add_subsystem('group', group, promotes=['*'])
-
 prob.setup(check=True)
+# prob.run_model()
+# prob.model.list_outputs(print_arrays=True, prom_name=True)
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+torque_temp = np.linspace(0., 1., n)
+angular_speed_temp = np.linspace(0., 600., n)
+
+
+prob['motor_group.mass'] = 20
+
+
+prob['motor_group.normalized_torque'] = np.outer(
+    np.linspace(0, 1., n),
+    np.ones(n),
+)
+prob['motor_group.angular_speed'] = np.outer(
+    np.ones(n),
+    np.linspace(0, 600., n),
+)
+
 prob.run_model()
-prob.model.list_outputs(print_arrays=True, prom_name=True)
+# prob.model.list_outputs(print_arrays=True, prom_name=True)
+
+
+low = 50.
+high = 92.8
+levels = high - np.linspace(0., 1., 15) ** 3. * (high - low)
+levels = [np.round(val, 3) for val in levels]
+levels = levels[::-1]
+
+plt.figure()
+plt.contourf(
+    prob['motor_group.angular_speed'], prob['motor_group.torque'],
+    prob['motor_group.motor_efficiency'], 
+    levels=levels,
+)
+cs = plt.contour(
+    prob['motor_group.angular_speed'], prob['motor_group.torque'],
+    prob['motor_group.motor_efficiency'], colors='k',
+    levels=levels,
+)
+if plt.rcParams["text.usetex"]:
+    fmt = r'%r \%%'
+else:
+    fmt = '%r %%'
+plt.clabel(cs, inline=True, fmt=fmt, fontsize=10)
+plt.show()
