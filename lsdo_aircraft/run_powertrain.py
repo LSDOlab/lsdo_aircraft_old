@@ -72,7 +72,7 @@ Lines 21-28 specify the type of propulsion system that will be used for your air
                 turbofan_name, ['density', 'mach_number'],
             )
 
-
+Note:  If your aircraft uses a hybrid powertrain, you need to make the required links between different             modules.
 '''
 
 preprocess_name = 'preprocess'
@@ -162,10 +162,14 @@ group = PowertrainGroup(
     powertrain=powertrain,
 )
 prob.model.add_subsystem('group', group, promotes=['*'])
+
+'''
+The line below would check if the connections are setup for all the components even before you run the model. If there are any components that are not connected, it would list them out before running the model.
+'''
 prob.setup(check=True)
 
 '''
-This runs the model and prints out all the outputs of your problem.
+This runs the model and prints out all the outputs of your problem. If there were any connection issues listed out from the line above, you can see the values of the outputs for those.
 '''
 prob.run_model()
 prob.model.list_outputs(print_arrays=True, prom_name=True)
