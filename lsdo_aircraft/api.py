@@ -5,3 +5,6 @@ from lsdo_aircraft.atmosphere.atmosphere import Atmosphere
 from lsdo_aircraft.simple_battery.simple_battery import SimpleBattery
 from lsdo_aircraft.simple_motor.simple_motor import SimpleMotor
 from lsdo_aircraft.simple_rotor.simple_rotor import SimpleRotor
+from lsdo_aircraft.simple_reciprocating.simple_reciprocating import SimpleReciprocating
+from lsdo_aircraft.simple_turbofan.simple_turbofan import SimpleTurbofan
+from lsdo_aircraft.simple_turboprop.simple_turboprop import SimpleTurboprop
