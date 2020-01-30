@@ -3,7 +3,7 @@ from openmdao.api import Problem
 from lsdo_aircraft.api import PowertrainGroup, Powertrain, Preprocess, Atmosphere, SimpleBattery, SimpleMotor, SimpleRotor
 
 
-n = 250
+n = 25
 shape = (n, n)
 
 powertrain = Powertrain()
@@ -63,7 +63,7 @@ prob.model = PowertrainGroup(
     powertrain=powertrain,
 )
 prob.setup(check=True)
-prob.run_model()
+# prob.run_model()
 # prob.model.list_outputs(print_arrays=True, prom_name=True)
 
 import numpy as np
@@ -73,39 +73,25 @@ torque_temp = np.linspace(0., 1., n)
 angular_speed_temp = np.linspace(0., 600., n)
 
 
-
-
 prob['motor_group.mass'] = 20
-prob['motor_group.normalized_torque'] = np.tile(torque_temp, (n, 1))
-prob['motor_group.angular_speed'] = np.tile(angular_speed_temp.T, (n, 1))
+
+
+prob['motor_group.normalized_torque'] = np.outer(
+    np.linspace(0, 1., n),
+    np.ones(n),
+)
+prob['motor_group.angular_speed'] = np.outer(
+    np.ones(n),
+    np.linspace(0, 600., n),
+)
+
 prob.run_model()
 prob.model.list_outputs(print_arrays=True, prom_name=True)
 
-plt.figure(1)
-plt.scatter(
-    prob['motor_group.angular_speed'],
-    prob['motor_group.torque'],
-)
-plt.show()
 
-plt.figure(2)
-plt.scatter(
-    prob['motor_group.angular_speed'],
-    prob['motor_group.motor_efficiency'],
-)
-plt.show()
-
-plt.figure(4)
-plt.scatter(
-    prob['motor_group.torque'],
-    prob['motor_group.motor_efficiency'],
-)
-plt.show()
-
-
-plt.figure(3)
-plt.contour(
-    [prob['motor_group.angular_speed'][0], prob['motor_group.torque'][:, 0], ],
-    prob['motor_group.motor_efficiency'], levels=np.logspace(0, 100, 10)
+plt.figure()
+plt.contourf(
+    prob['motor_group.angular_speed'], prob['motor_group.torque'],
+    prob['motor_group.motor_efficiency'], levels=np.logspace(0, 100, 100),
 )
 plt.show()
