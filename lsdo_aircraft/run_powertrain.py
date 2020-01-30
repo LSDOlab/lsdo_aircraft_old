@@ -1,10 +1,10 @@
-from openmdao.api import Problem
+from openmdao.api import Problem, IndepVarComp
 
-from lsdo_aircraft.api import PowertrainGroup, Powertrain, Preprocess, Atmosphere, SimpleBattery, SimpleMotor, SimpleRotor
+from lsdo_aircraft.api import PowertrainGroup, Powertrain, Preprocess, Atmosphere
+from lsdo_aircraft.api import SimpleBattery, SimpleMotor, SimpleRotor, SimpleReciprocating, SimpleTurbofan, SimpleTurboprop
 
 
-n = 250
-shape = (n,)
+shape = (1,)
 
 powertrain = Powertrain()
 
@@ -13,6 +13,9 @@ atmosphere_name = 'atmosphere'
 battery_name = 'battery'
 motor_name = 'motor'
 rotor_name = 'rotor'
+reciprocating_name = 'reciprocating'
+turbofan_name = 'turbofan'
+turboprop_name = 'turboprop'
 
 powertrain.add_module(Preprocess(
     name=preprocess_name,
@@ -28,6 +31,15 @@ powertrain.add_module(SimpleMotor(
 ))
 powertrain.add_module(SimpleRotor(
     name=rotor_name,
+))
+powertrain.add_module(SimpleReciprocating(
+    name=reciprocating_name,
+))
+powertrain.add_module(SimpleTurbofan(
+    name=turbofan_name,
+))
+powertrain.add_module(SimpleTurboprop(
+    name=turboprop_name,
 ))
 
 powertrain.add_link(
@@ -54,29 +66,33 @@ powertrain.add_link(
     atmosphere_name, ['density', 'sonic_speed'],
     rotor_name, ['density', 'sonic_speed'],
 )
+powertrain.add_link(
+    atmosphere_name, ['density'],
+    reciprocating_name, ['density'],
+)
+powertrain.add_link(
+    atmosphere_name, ['density', 'mach_number'],
+    turbofan_name, ['density', 'mach_number'],
+)
+powertrain.add_link(
+    atmosphere_name, ['density'],
+    turboprop_name, ['density'],
+)
 
 
 prob = Problem()
 
-prob.model = PowertrainGroup(
+comp = IndepVarComp()
+comp.add_output('sealevel_power', val=200.e3, shape=shape)
+comp.add_output('sealevel_thrust', val=200.e3, shape=shape)
+prob.model.add_subsystem('inputs_comp', comp, promotes=['*'])
+
+group = PowertrainGroup(
     shape=shape,
     powertrain=powertrain,
 )
+prob.model.add_subsystem('group', group, promotes=['*'])
+
 prob.setup(check=True)
 prob.run_model()
-# prob.model.list_outputs(print_arrays=True, prom_name=True)
-
-import numpy as np
-import matplotlib.pyplot as plt
-
-prob['motor_group.mass'][:] = 20.
-prob['motor_group.normalized_torque'][:] = 1.
-prob['motor_group.angular_speed'][:] = np.linspace(0., 600., n)
-prob.run_model()
 prob.model.list_outputs(print_arrays=True, prom_name=True)
-
-plt.plot(
-    prob['motor_group.angular_speed'],
-    prob['motor_group.torque'],   
-)
-plt.show()

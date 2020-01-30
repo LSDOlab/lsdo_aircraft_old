@@ -28,7 +28,7 @@ except:
 #      payload_weight = np.array([[4 * 230 * N_lb, 5 * 230 * N_lb, 6 * 230 * N_lb ],[4 * 230 * N_lb, 5 * 230 * N_lb, 6 * 230 * N_lb ]])
 #      range_km = np.array([[100., 100, 100] , [200, 200 , 200]])
 #   The other variables you can just remain as a single value, because the program will automatically make them into a (2, 3) matrix.
-num_sweep_points = 0
+num_sweep_points = 100
 shape = (1 + num_sweep_points,)
 
 # energy_source_type specifies whether you're using an electric or fuel-burning aircraft. Different equations apply
