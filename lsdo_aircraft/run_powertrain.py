@@ -152,7 +152,7 @@ if plt.rcParams["text.usetex"]:
 else:
     fmt = '%r %%'
 plt.clabel(cs, inline=True, fmt=fmt, fontsize=10)
-plt.ylim([0., 600.])
+plt.ylim([0., 300.])
 plt.xlabel(r'Rotational speed [RPM]')
 plt.ylabel(r'Torque [Nm]')
 plt.show()
