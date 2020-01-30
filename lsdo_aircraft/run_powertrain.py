@@ -63,18 +63,12 @@ prob.model = PowertrainGroup(
     powertrain=powertrain,
 )
 prob.setup(check=True)
-# prob.run_model()
-# prob.model.list_outputs(print_arrays=True, prom_name=True)
+
 
 import numpy as np
 import matplotlib.pyplot as plt
 
-torque_temp = np.linspace(0., 1., n)
-angular_speed_temp = np.linspace(0., 600., n)
-
-
 prob['motor_group.mass'] = 20
-
 
 prob['motor_group.normalized_torque'] = np.outer(
     np.linspace(0, 1., n),
@@ -82,16 +76,16 @@ prob['motor_group.normalized_torque'] = np.outer(
 )
 prob['motor_group.angular_speed'] = np.outer(
     np.ones(n),
-    np.linspace(0, 600., n),
+    np.linspace(0, 1000., n),
 )
 
 prob.run_model()
 prob.model.list_outputs(print_arrays=True, prom_name=True)
 
-
-plt.figure()
+plt.figure(1)
 plt.contourf(
     prob['motor_group.angular_speed'], prob['motor_group.torque'],
-    prob['motor_group.motor_efficiency'], levels=np.logspace(0, 100, 100),
-)
+    prob['motor_group.motor_efficiency'], levels=np.linspace(70, 93, 40))
+plt.xlim(0, 600)
+plt.ylim(0, 300)
 plt.show()

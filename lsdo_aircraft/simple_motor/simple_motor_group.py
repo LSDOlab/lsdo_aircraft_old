@@ -16,20 +16,22 @@ class SimpleMotorGroup(Group):
         shape = self.options['shape']
         module = self.options['module']
 
+
         comp = IndepVarComp()
         comp.add_output('mass', shape=shape)
         comp.add_output('normalized_torque', shape=shape)
         comp.add_output('angular_speed', shape=shape)
-        comp.add_output('magnetic_flux_density', val=0.9, shape=shape)
-        comp.add_output('line_current_density', val=8.5 * 10 ** 4, shape=shape)
-        comp.add_output('number_of_poles_per_phase', val=6, shape=shape)
-        comp.add_output('hysteresis_coeff', val=1., shape=shape)
-        comp.add_output('copper_resistivity', val=1.68 * 10 ** -8, shape=shape)
-        comp.add_output('eta_slot', val=0.5, shape=shape)
-        comp.add_output('eta_fill', val=0.5, shape=shape)
-        # comp.add_output('efficiency', val=0.9, shape=shape)
+        for var_name in [
+            'magnetic_flux_density',
+            'line_current_density',
+            'number_of_poles_per_phase',
+            'hysteresis_coeff',
+            'copper_resistivity',
+            'eta_slot',
+            'eta_fill',
+        ]:
+            comp.add_output(var_name, val=module[var_name], shape=shape)
         self.add_subsystem('inputs_comp', comp, promotes=['*'])
-
 
         comp = PowerCombinationComp(
             shape=shape,
@@ -99,16 +101,6 @@ class SimpleMotorGroup(Group):
             ),
         )
         self.add_subsystem('shaft_power_comp', comp, promotes=['*'])
-
-        # comp = PowerCombinationComp(
-        #     shape=shape,
-        #     out_name='electric_power',
-        #     powers_dict=dict(
-        #         shaft_power=1.,
-        #         efficiency=-1.,
-        #     ),
-        # )
-        # self.add_subsystem('electric_power_comp', comp, promotes=['*'])
 
         comp = PowerCombinationComp(
             shape=shape,
