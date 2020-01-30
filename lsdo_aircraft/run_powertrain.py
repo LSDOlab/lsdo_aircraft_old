@@ -104,7 +104,7 @@ torque_temp = np.linspace(0., 1., n)
 angular_speed_temp = np.linspace(0., 600., n)
 
 
-prob['motor_group.mass'] = 20
+prob['motor_group.mass'] = 20.
 
 
 prob['motor_group.normalized_torque'] = np.outer(
@@ -126,20 +126,33 @@ levels = high - np.linspace(0., 1., 15) ** 3. * (high - low)
 levels = [np.round(val, 3) for val in levels]
 levels = levels[::-1]
 
+low = 0.
+high = 100.
+levelsf = high - np.linspace(0., 1., 100) ** 3. * (high - low)
+levelsf = levelsf[::-1]
+
 plt.figure()
 plt.contourf(
-    prob['motor_group.angular_speed'], prob['motor_group.torque'],
+    prob['motor_group.angular_speed'] * 60. / 2. / np.pi, prob['motor_group.torque'],
     prob['motor_group.motor_efficiency'], 
-    levels=levels,
+    levels=levelsf,
 )
 cs = plt.contour(
-    prob['motor_group.angular_speed'], prob['motor_group.torque'],
+    prob['motor_group.angular_speed'] * 60. / 2. / np.pi, prob['motor_group.torque'],
     prob['motor_group.motor_efficiency'], colors='k',
     levels=levels,
+)
+plt.plot(
+    prob['motor_group.angular_speed'][0, :] * 60. / 2. / np.pi,
+    prob['motor_group.available_torque'][0, :],
+    'k'
 )
 if plt.rcParams["text.usetex"]:
     fmt = r'%r \%%'
 else:
     fmt = '%r %%'
 plt.clabel(cs, inline=True, fmt=fmt, fontsize=10)
+plt.ylim([0., 600.])
+plt.xlabel(r'Rotational speed [RPM]')
+plt.ylabel(r'Torque [Nm]')
 plt.show()
