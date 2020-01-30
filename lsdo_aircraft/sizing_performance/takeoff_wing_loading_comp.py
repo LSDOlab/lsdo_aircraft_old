@@ -3,7 +3,7 @@ from lsdo_utils.api import PowerCombinationComp, units, constants
 
 class PropellerTakeoffWingLoadingComp(PowerCombinationComp):
 
-    def post_initialize(self):
+    def pre_setup(self):
         self.options.update(dict(
             powers_dict=dict(
                 TOP=1.,
@@ -19,7 +19,7 @@ class PropellerTakeoffWingLoadingComp(PowerCombinationComp):
 
 class JetTakeoffWingLoadingComp(PowerCombinationComp):
 
-    def post_initialize(self):
+    def pre_setup(self):
         self.options.update(dict(
             powers_dict=dict(
                 TOP=1.,
