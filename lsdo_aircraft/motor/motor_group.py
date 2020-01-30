@@ -59,8 +59,10 @@ class MotorGroup(Group):
         shape = self.options['shape']
 
         IVC = IndepVarComp()
+        IVC.add_output('hysterisis_coeff', val=3*10**-3)
+        IVC.add_output('frequency', val=400, shape=shape)
         IVC.add_output('P', val=60000, shape=shape)
-        IVC.add_output('omega', val=733, shape=shape)
+        IVC.add_output('rpm', val=7000, shape=shape)
         IVC.add_output('r4', val=0.094, shape=shape)
         IVC.add_output('t_env', val=293, shape=shape)
         IVC.add_output('tau_ti', val=550 * 10 ** 6, shape=shape)
@@ -97,6 +99,26 @@ class MotorGroup(Group):
         # eta_ro = self.options['eta_ro']
         # kw1 = self.options['kw1']
         # k_cu = self.options['k_cu']
+
+        omega = PowerCombinationComp(
+            shape=shape,
+            in_names=['rpm'],
+            out_name='omega',
+            powers=[1.],
+            coeff=(2*np.pi/60),
+        )
+
+        self.add_subsystem('omega_comp', omega, promotes=['*'])
+
+        num_poles = PowerCombinationComp(
+            shape=shape,
+            in_names=['frequency', 'rpm'],
+            out_name='num_poles',
+            powers=[1., -1.],
+            coeff=(120),
+        )
+
+        self.add_subsystem('num_poles_comp', num_poles, promotes=['*'])
 
         torque = PowerCombinationComp(
             shape=shape,
@@ -269,25 +291,47 @@ class MotorGroup(Group):
 
         self.add_subsystem('ohmic_loss_comp', ohmic_loss, promotes=['*'])
 
-        iron_loss_f = PowerCombinationComp(
-            shape=shape,
-            in_names=['omega'],
-            out_name='f',
-            powers=[1.],
-            coeff=(60/(2*np.pi))
+        # iron_loss_f = PowerCombinationComp(
+        #     shape=shape,
+        #     in_names=['omega'],
+        #     out_name='f',
+        #     powers=[1.],
+        #     coeff=(60/(2*np.pi))
+        #
+        # )
+        # self.add_subsystem('iron_loss_f_comp', iron_loss_f, promotes=['*'])
 
-        )
-        self.add_subsystem('iron_loss_f_comp', iron_loss_f, promotes=['*'])
-
-        iron_loss = PowerCombinationComp(
+        eddy_loss = PowerCombinationComp(
             shape=shape,
-            in_names=['b_mg', 'stator_mass', 'f'],
-            out_name='iron_loss',
+            in_names=['b_mg', 'stator_mass', 'frequency'],
+            out_name='eddy_loss',
             powers=[2., 1., 1.5],
-            coeff=1.1 * (24/(50*120)) ** 1.5 # the number 24 represents the number of poles in the motor
+            coeff=1.1 * (1 / 50) ** 1.5
+        )
+
+        self.add_subsystem('eddy_loss_comp', eddy_loss, promotes=['*'])
+
+        hysterisis_loss = PowerCombinationComp(
+            shape=shape,
+            in_names=['b_mg', 'rotor_mass', 'frequency', 'hysterisis_coeff'],
+            out_name='hysterisis_loss',
+            powers=[2., 1., 1., 1.],
+            coeff=1.0
+        )
+
+        self.add_subsystem('hysterisis_loss_comp', hysterisis_loss, promotes=['*'])
+
+        iron_loss = LinearCombinationComp(
+            shape=shape,
+            in_names=['eddy_loss', 'hysterisis_loss'],
+            out_name='iron_loss',
+            coeffs=[1., 1],
+            constant=0.0
         )
 
         self.add_subsystem('iron_loss_comp', iron_loss, promotes=['*'])
+
+
 
         power_input = LinearCombinationComp(
             shape=shape,
