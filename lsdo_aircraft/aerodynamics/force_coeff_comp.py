@@ -9,13 +9,8 @@ class ForceCoeffComp(ArrayExplicitComponent):
         self.options.declare('coeff_name', types=str)
         self.options.declare('force_name', types=str)
         self.options.declare('area_name', default='area', types=str)
-        self.options.declare('module')
 
     def array_setup(self):
-        module = self.options['module']
-        for var_name in ['coeff_name', 'force_name' 'area_name']:
-            self.array_add_input(module[var_name])
-
         coeff_name = self.options['coeff_name']
         force_name = self.options['force_name']
         area_name = self.options['area_name']

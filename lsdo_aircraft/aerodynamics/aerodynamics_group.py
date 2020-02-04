@@ -129,11 +129,11 @@ class AerodynamicsGroup(Group):
                                 comp,
                                 promotes=['*'])
 
-            comp = LiftCurveSlopeComp(shape=shape, F=lifting_surface.F)
+            comp = LiftCurveSlopeComp(shape=shape, F=lifting_surface['F'])
             group.add_subsystem('lift_curve_slope_comp', comp, promotes=['*'])
 
-            comp = LiftCoeffComp(shape=shape, CL0=lifting_surface.CL0)
-            comp.add_constraint('lift_coeff', upper=lifting_surface.CLmax)
+            comp = LiftCoeffComp(shape=shape, CL0=lifting_surface['CL0'])
+            comp.add_constraint('lift_coeff', upper=lifting_surface['CLmax'])
             group.add_subsystem('lift_coeff_comp', comp, promotes=['*'])
 
             comp = ForceComp(shape=shape,
@@ -150,14 +150,14 @@ class AerodynamicsGroup(Group):
 
             comp = LiftingSurfaceFFComp(
                 shape=shape,
-                x_c_max_camber=lifting_surface.x_c_max_camber,
-                t_c=lifting_surface.t_c,
+                x_c_max_camber=lifting_surface['x_c_max_camber'],
+                t_c=lifting_surface['t_c'],
             )
             group.add_subsystem('lifting_surface_ff_comp',
                                 comp,
                                 promotes=['*'])
 
-            comp = ParasiticDragCoeffComp(shape=shape, Q=lifting_surface.Q)
+            comp = ParasiticDragCoeffComp(shape=shape, Q=lifting_surface['Q'])
             group.add_subsystem('parasitic_drag_coeff_comp',
                                 comp,
                                 promotes=['*'])
@@ -197,7 +197,7 @@ class AerodynamicsGroup(Group):
                                group,
                                promotes=promotes)
 
-        for miscellaneous_part in aircraft.miscellaneous_parts:
+        for miscellaneous_part in aircraft['miscellaneous_parts']:
             name = miscellaneous_part['name']
             mirror = miscellaneous_part['mirror']
             CDp = miscellaneous_part['CDp']
@@ -238,13 +238,13 @@ class AerodynamicsGroup(Group):
 
         lift_names = []
         drag_names = []
-        for lifting_surface in aircraft.lifting_surfaces:
-            name = lifting_surface.name
+        for lifting_surface in aircraft['lifting_surfaces']:
+            name = lifting_surface['name']
 
             lift_names.append('{}_aerodynamics_group_lift'.format(name))
             drag_names.append('{}_aerodynamics_group_drag'.format(name))
 
-        for miscellaneous_part in aircraft.miscellaneous_parts:
+        for miscellaneous_part in aircraft['miscellaneous_parts']:
             name = miscellaneous_part['name']
             mirror = miscellaneous_part['mirror']
 
@@ -290,9 +290,9 @@ class AerodynamicsGroup(Group):
     def connect_dependencies(self, group):
         aircraft = self.options['aircraft']
 
-        for lifting_surface in aircraft.lifting_surfaces:
-            name = lifting_surface.name
-            mirror = lifting_surface.mirror
+        for lifting_surface in aircraft['lifting_surfaces']:
+            name = lifting_surface['name']
+            mirror = lifting_surface['mirror']
 
             if mirror:
                 sides = ['left_', 'right_']
@@ -337,7 +337,7 @@ class AerodynamicsGroup(Group):
                 '{}_aerodynamics_group.dynamic_viscosity_1e_6'.format(name),
             )
 
-        for miscellaneous_part in aircraft.miscellaneous_parts:
+        for miscellaneous_part in aircraft['miscellaneous_parts']:
             name = miscellaneous_part['name']
             mirror = miscellaneous_part['mirror']
             weight = miscellaneous_part['weight']
