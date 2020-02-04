@@ -25,3 +25,4 @@ from lsdo_aircraft.geometry.body import Body
 from lsdo_aircraft.geometry.body import LiftingSurface
 from lsdo_aircraft.geometry.body import MiscellaneousPart
 from lsdo_aircraft.geometry.body import Rotor
+from lsdo_aircraft.weights.weights_group import WeightsGroup

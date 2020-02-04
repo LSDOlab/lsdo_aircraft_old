@@ -5,7 +5,7 @@ from lsdo_utils.api import OptionsDictionary, float_types, units
 # from lsdo_aircraft.aerodynamics.aerodynamics_group import AerodynamicsGroup
 
 
-class Rotor(object):
+class Rotor(OptionsDictionary):
     def initialize(self):
         self.declare('name', types=str)
         self.declare('lifting_surface_name', types=str)
