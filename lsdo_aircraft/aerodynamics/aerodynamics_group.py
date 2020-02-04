@@ -280,12 +280,11 @@ class AerodynamicsGroup(Group):
         self.add_subsystem('total_lift_coeff_comp', comp, promotes=['*'])
 
         comp = ForceCoeffComp(
-            dict(
-                shape=shape,
-                coeff_name='total_drag_coeff',
-                force_name='total_drag',
-                area_name='ref_area',
-            ))
+            shape=shape,
+            coeff_name='total_drag_coeff',
+            force_name='total_drag',
+            area_name='ref_area',
+        )
         self.add_subsystem('total_drag_coeff_comp', comp, promotes=['*'])
 
     def connect_dependencies(self, group):
