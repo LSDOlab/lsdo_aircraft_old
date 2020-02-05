@@ -1,12 +1,7 @@
 from openmdao.api import Problem, IndepVarComp
 
-from lsdo_aircraft.api import (AerodynamicsGroup, DynamicPressureComp,
-                               ForceCoeffComp, ForceComp, LiftCoeffComp,
-                               LiftCurveSlopeComp, LiftingSurfaceFFComp,
-                               OswaldEfficiencyComp, ParasiticDragCoeffComp,
-                               ReynoldsComp, SkinFrictionCoeffComp, Body,
-                               LiftingSurface, NonliftingSurface, Rotor,
-                               WeightsGroup, AtmosphereGroup, AnalysisGroup)
+from lsdo_aircraft.api import (AnalysisGroup, Body, LiftingSurface,
+                               NonliftingSurface)
 
 n = 100
 shape = (n, n)

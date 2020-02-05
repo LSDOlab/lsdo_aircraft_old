@@ -6,7 +6,7 @@ from lsdo_utils.comps.array_explicit_component import ArrayExplicitComponent
 class CriticalMachComp(ArrayExplicitComponent):
     def initialize(self):
         self.options.declare('shape')
-        self.options.declare('tech_factor')
+        self.options.declare('tech_factor', default=0.87)
 
     def array_setup(self):
         self.array_add_input('lift_coeff')
