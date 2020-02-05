@@ -51,7 +51,7 @@ class AerodynamicsGroup(Group):
         for lifting_surface in aircraft['lifting_surfaces']:
             name = lifting_surface['name']
             mirror = lifting_surface['mirror']
-            sweep = lifting_surface['sweep']
+            sweep_deg = lifting_surface['sweep_deg']
             mac = lifting_surface['mac']
 
             if mirror:
@@ -63,8 +63,8 @@ class AerodynamicsGroup(Group):
 
             comp = IndepVarComp()
             # comp.add_output('incidence_angle', val=0., shape=shape)
-            comp.add_output('sweep', val=sweep, shape=shape)
-            comp.add_output('mac', val=sweep, shape=shape)
+            comp.add_output('sweep_deg', val=sweep_deg, shape=shape)
+            comp.add_output('mac', val=mac, shape=shape)
             # comp.add_design_var('incidence_angle',
             #                     lower=-8. * np.pi / 180.,
             #                     upper=10. * np.pi / 180.)
@@ -320,72 +320,3 @@ class AerodynamicsGroup(Group):
                 '{}_aerodynamics_group.drag'.format(side + name),
                 '{}_aerodynamics_group_drag'.format(name),
             )
-
-    def connect_dependencies(self, group):
-        aircraft = self.options['aircraft']
-
-        for lifting_surface in aircraft['lifting_surfaces']:
-            name = lifting_surface['name']
-            mirror = lifting_surface['mirror']
-
-            if mirror:
-                sides = ['left_', 'right_']
-            else:
-                sides = ['']
-
-            for side in sides:
-                group.connect(
-                    '{}_geometry_group.part_area'.format(side + name),
-                    '{}_aerodynamics_group.{}part_area'.format(name, side),
-                )
-                group.connect(
-                    '{}_geometry_group.part_span'.format(side + name),
-                    '{}_aerodynamics_group.{}part_span'.format(name, side),
-                )
-            group.connect(
-                '{}_geometry_group.mac'.format(sides[0] + name),
-                '{}_aerodynamics_group.mac'.format(name),
-            )
-            group.connect(
-                '{}_geometry_group.sweep'.format(sides[0] + name),
-                '{}_aerodynamics_group.sweep'.format(name),
-            )
-            group.connect(
-                'alpha',
-                '{}_aerodynamics_group.alpha'.format(name),
-            )
-            group.connect(
-                'speed',
-                '{}_aerodynamics_group.speed'.format(name),
-            )
-            group.connect(
-                'sonic_speed',
-                '{}_aerodynamics_group.sonic_speed'.format(name),
-            )
-            group.connect(
-                'density',
-                '{}_aerodynamics_group.density'.format(name),
-            )
-            group.connect(
-                'dynamic_viscosity_1e_6',
-                '{}_aerodynamics_group.dynamic_viscosity_1e_6'.format(name),
-            )
-
-        for nonlifting_surface in aircraft['nonlifting_surfaces']:
-            name = nonlifting_surface['name']
-            mirror = nonlifting_surface['mirror']
-
-            if mirror:
-                sides = ['left_', 'right_']
-            else:
-                sides = ['']
-
-            for side in sides:
-                group.connect(
-                    'speed',
-                    '{}_aerodynamics_group.speed'.format(side + name),
-                )
-                group.connect(
-                    'density',
-                    '{}_aerodynamics_group.density'.format(side + name),
-                )

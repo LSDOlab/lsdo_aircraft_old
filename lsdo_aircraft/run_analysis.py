@@ -90,16 +90,17 @@ Below you would define constants that are characteristic of your mission. If you
 '''
 indep = IndepVarComp()
 indep.add_output('speed', val=0, shape=shape)
+indep.add_output('altitude', val=30, shape=shape)
 # indep.add_output('sonic_speed', val=0, shape=shape)
 # indep.add_output('density', val=0, shape=shape)
 # indep.add_output('alpha', val=0, shape=shape)
 # indep.add_output('sweep', val=0, shape=shape)
-# atmos = AtmosphereGroup(shape=shape, module=None)
-# aero = AerodynamicsGroup(shape=shape, aircraft=aircraft)
+atmos = AtmosphereGroup(shape=shape, module=None)
+aero = AerodynamicsGroup(shape=shape, aircraft=aircraft)
 weights = WeightsGroup(shape=shape, aircraft=aircraft)
 prob.model.add_subsystem('indep', indep, promotes=['*'])
-# prob.model.add_subsystem('atmos', atmos, promotes=['*'])
-# prob.model.add_subsystem('aero', aero, promotes=['*'])
+prob.model.add_subsystem('atmos', atmos, promotes=['*'])
+prob.model.add_subsystem('aero', aero, promotes=['*'])
 prob.model.add_subsystem('weights', weights, promotes=['*'])
 '''
 The line below would check if the connections are setup for all the components even before you run the model. If there are any components that are not connected, it would list them out before running the model.

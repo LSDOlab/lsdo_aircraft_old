@@ -9,7 +9,7 @@ class LiftingSurface(OptionsDictionary):
         self.declare('area', default=1., types=float_types)
         self.declare('aspect_ratio', default=1., types=float_types)
         self.declare('taper_ratio', default=1., types=float_types)
-        self.declare('sweep', default=0., types=float_types)
+        self.declare('sweep_deg', default=0., types=float_types)
         self.declare('CLmax', default=1.7, types=float_types)
         self.declare('CL0', default=0., types=float_types)
         self.declare('x_c_max_camber', default=0.25, types=float_types)

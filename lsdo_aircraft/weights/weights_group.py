@@ -80,6 +80,11 @@ class WeightsGroup(Group):
             name = lifting_surface['name']
             mirror = lifting_surface['mirror']
             type_ = lifting_surface['type_']
+            cg = lifting_surface['cg_loc']
+            area = lifting_surface['area']
+            aspect_ratio = lifting_surface['aspect_ratio']
+            sweep_deg = lifting_surface['sweep_deg']
+            taper_ratio = lifting_surface['taper_ratio']
 
             if mirror:
                 sides = ['left_', 'right_']
@@ -87,6 +92,15 @@ class WeightsGroup(Group):
                 sides = ['']
 
             group = Group()
+
+            comp = IndepVarComp()
+            comp.add_output('cg', val=cg, shape=shape)
+            comp.add_output('area', val=area, shape=shape)
+            comp.add_output('aspect_ratio', val=aspect_ratio, shape=shape)
+            comp.add_output('sweep_deg', val=sweep_deg, shape=shape)
+            comp.add_output('taper_ratio', val=taper_ratio, shape=shape)
+            # comp.add_design_var('cg', lower=0.)
+            group.add_subsystem('inputs_comp', comp, promotes=['*'])
 
             if type_ == 'wing':
                 comp = WingWeightComp(shape=shape,
@@ -112,7 +126,6 @@ class WeightsGroup(Group):
                 sides = ['']
 
             for side in sides:
-                group = Group()
 
                 comp = ArrayReshapeComp(
                     in_name='power',
@@ -197,7 +210,12 @@ class WeightsGroup(Group):
 
                 comp = IndepVarComp()
                 comp.add_output('weight_scalar', val=weight)
+                comp.add_output('cg', val=cg, shape=shape)
                 group.add_subsystem('inputs_comp', comp, promotes=['*'])
+                # group = Group()
+                # comp = IndepVarComp()
+                # # comp.add_design_var('cg', lower=0.)
+                # group.add_subsystem('cg_comp', comp, promotes=['*'])
 
                 comp = ScalarExpansionComp(
                     shape=shape,
@@ -261,112 +279,24 @@ class WeightsGroup(Group):
         for lifting_surface in aircraft['lifting_surfaces']:
             name = lifting_surface['name']
             self.connect(
-                '{}_aerodynamics_group.drag'.format(side + name),
-                '{}_aerodynamics_group_drag'.format(name),
-            )
-
-    def connect_dependencies(self, group):
-        aircraft = self.options['aircraft']
-
-        part_group_names = []
-
-        for lifting_surface in aircraft['lifting_surfaces']:
-            name = lifting_surface['name']
-            mirror = lifting_surface['mirror']
-
-            if mirror:
-                sides = ['left_', 'right_']
-            else:
-                sides = ['']
-
-            # group.connect(
-            #     '{}_aerodynamics_group.area'.format(name),
-            #     '{}_weights_group.area'.format(name),
-            # )
-            # group.connect(
-            #     'max_dynamic_pressure',
-            #     '{}_weights_group.max_dynamic_pressure'.format(name),
-            # )
-            group.connect(
-                '{}_aerodynamics_group.aspect_ratio'.format(name),
-                '{}_weights_group.aspect_ratio'.format(name),
-            )
-            group.connect(
-                '{}_geometry_group.sweep_deg'.format(sides[0] + name),
-                '{}_weights_group.sweep_deg'.format(name),
-            )
-            group.connect(
-                '{}_geometry_group.taper_ratio'.format(sides[0] + name),
-                '{}_weights_group.taper_ratio'.format(name),
-            )
-            group.connect(
-                'gross_weight_guess',
-                '{}_weights_group.gross_weight'.format(name),
-            )
-            group.connect(
-                '{}_weights_group.weight'.format(name),
+                '{}_weights_group.weight'.format(side + name),
                 '{}_weight'.format(name),
             )
-            group.connect(
-                '{}_geometry_group.cg'.format(sides[0] + name),
+        for lifting_surface in aircraft['lifting_surfaces']:
+            name = lifting_surface['name']
+            self.connect(
+                '{}_weights_group.cg'.format(side + name),
                 '{}_cg'.format(name),
             )
-
-        for rotor in aircraft['rotors']:
-            name = rotor['name']
-            mirror = rotor['mirror']
-
-            if mirror:
-                sides = ['left_', 'right_']
-            else:
-                sides = ['']
-
-            for side in sides:
-                part_group_names.append('{}'.format(side + name))
-
-                group.connect(
-                    '{}_propulsor_group.power'.format(side + name),
-                    '{}_weights_tmp_group.power'.format(side + name),
-                )
-                # group.connect(
-                #     'gross_weight_guess',
-                #     '{}_weights_group.gross_weight'.format(side + name),
-                # )
-                group.connect(
-                    '{}_weights_group.weight'.format(side + name),
-                    '{}_weight'.format(side + name),
-                )
-                group.connect(
-                    '{}_geometry_group.cg'.format(side + name),
-                    '{}_cg'.format(side + name),
-                )
-                group.connect(
-                    '{}_weights_tmp_group.max_power_scalar_tmp'.format(side +
-                                                                       name),
-                    '{}_weights_tmp_comp.{}max_power_scalar_tmp'.format(
-                        name, side),
-                )
-                group.connect(
-                    '{}_weights_tmp_comp.max_power_scalar'.format(name),
-                    '{}_weights_group.max_power_scalar'.format(side + name),
-                )
-
         for nonlifting_surface in aircraft['nonlifting_surfaces']:
             name = nonlifting_surface['name']
-            mirror = nonlifting_surface['mirror']
-            weight = nonlifting_surface['weight']
-
-            if mirror:
-                sides = ['left_', 'right_']
-            else:
-                sides = ['']
-
-            for side in sides:
-                group.connect(
-                    '{}_weights_group.weight'.format(side + name),
-                    '{}_weight'.format(side + name),
-                )
-                group.connect(
-                    '{}_geometry_group.cg'.format(side + name),
-                    '{}_cg'.format(side + name),
-                )
+            self.connect(
+                '{}_weights_group.weight'.format(side + name),
+                '{}_weight'.format(name),
+            )
+        for nonlifting_surface in aircraft['nonlifting_surfaces']:
+            name = nonlifting_surface['name']
+            self.connect(
+                '{}_weights_group.cg'.format(side + name),
+                '{}_cg'.format(name),
+            )
