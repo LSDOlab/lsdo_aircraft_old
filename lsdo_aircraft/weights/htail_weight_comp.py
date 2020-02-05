@@ -41,8 +41,8 @@ class HTailWeightComp(ArrayExplicitComponent):
         Mult_f = 0.7
         Add_f = 280.
 
-        Mult_f = self.options['lifting_surface'].multiplicative_factor
-        Add_f = self.options['lifting_surface'].additive_factor
+        Mult_f = self.options['lifting_surface']['multiplicative_factor']
+        Add_f = self.options['lifting_surface']['additive_factor']
 
         tc = 0.2
 
@@ -65,8 +65,8 @@ class HTailWeightComp(ArrayExplicitComponent):
         Mult_f = 0.7
         Add_f = 280.
 
-        Mult_f = self.options['lifting_surface'].multiplicative_factor
-        Add_f = self.options['lifting_surface'].additive_factor
+        Mult_f = self.options['lifting_surface']['multiplicative_factor']
+        Add_f = self.options['lifting_surface']['additive_factor']
 
         tc = 0.2
         # Nz : ultimate load factor

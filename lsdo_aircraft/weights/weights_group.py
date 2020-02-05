@@ -15,13 +15,13 @@ from lsdo_aircraft.weights.htail_weight_comp import HTailWeightComp
 from lsdo_aircraft.weights.motor_weight_comp import MotorWeightComp
 from lsdo_aircraft.weights.cg_comp import CGComp
 from lsdo_aircraft.weights.max_2_comp import Max2Comp
-from lsdo_aircraft.api import Body, Rotor, LiftingSurface, MiscellaneousPart
+from lsdo_aircraft.api import Aircraft, Rotor, LiftingSurface, MiscellaneousPart
 
 
 class WeightsGroup(Group):
     def initialize(self):
         self.options.declare('shape', types=tuple)
-        self.options.declare('aircraft')
+        self.options.declare('aircraft', types=Aircraft)
 
     def setup(self):
         shape = self.options['shape']
@@ -191,9 +191,9 @@ class WeightsGroup(Group):
                 part_group_names.append('{}'.format(side + name))
 
         for miscellaneous_part in aircraft['miscellaneous_parts']:
-            name = miscellaneous_parts['name']
-            mirror = miscellaneous_parts['mirror']
-            weight = miscellaneous_parts['weight']
+            name = miscellaneous_part['name']
+            mirror = miscellaneous_part['mirror']
+            weight = miscellaneous_part['weight']
 
             if mirror:
                 sides = ['left_', 'right_']

@@ -22,7 +22,7 @@ from lsdo_aircraft.aerodynamics.parasitic_drag_coeff_comp import \
     ParasiticDragCoeffComp
 from lsdo_aircraft.aerodynamics.skin_friction_coeff_comp import \
     SkinFrictionCoeffComp
-from lsdo_aircraft.geometry.body import Body
+from lsdo_aircraft.geometry.aircraft import Aircraft
 
 # from lsdo_utils.api import OptionsDictionary, float_types, units
 from lsdo_utils.api import float_types
@@ -31,13 +31,11 @@ from lsdo_utils.api import float_types
 class AerodynamicsGroup(Group):
     def initialize(self):
         self.options.declare('shape', types=tuple)
-        self.options.declare('aircraft', types=Body)
-        self.options.declare('incidence_angle', default=0., types=float_types)
+        self.options.declare('aircraft', types=Aircraft)
 
     def setup(self):
         shape = self.options['shape']
         aircraft = self.options['aircraft']
-        incidence_angle = self.options['incidence_angle']
 
         for lifting_surface in aircraft['lifting_surfaces']:
             name = lifting_surface['name']
@@ -52,9 +50,7 @@ class AerodynamicsGroup(Group):
             group = Group()
 
             comp = IndepVarComp()
-            comp.add_output('incidence_angle',
-                            val=incidence_angle,
-                            shape=shape)
+            comp.add_output('incidence_angle', val=0., shape=shape)
             comp.add_design_var('incidence_angle',
                                 lower=-8. * np.pi / 180.,
                                 upper=10. * np.pi / 180.)
@@ -190,9 +186,11 @@ class AerodynamicsGroup(Group):
             # -------------------------------------------------------
 
             if reference:
-                promotes = ['ref_area']
+                promotes = ['ref_area', 'speed']
             else:
                 promotes = None
+
+            promotes = ['speed', 'density']
             self.add_subsystem('{}_aerodynamics_group'.format(name),
                                group,
                                promotes=promotes)

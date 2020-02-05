@@ -5,7 +5,8 @@ from lsdo_aircraft.api import (AerodynamicsGroup, DynamicPressureComp,
                                LiftCurveSlopeComp, LiftingSurfaceFFComp,
                                OswaldEfficiencyComp, ParasiticDragCoeffComp,
                                ReynoldsComp, SkinFrictionCoeffComp, Aircraft,
-                               LiftingSurface, MiscellaneousPart, Rotor)
+                               LiftingSurface, MiscellaneousPart, Rotor,
+                               WeightsGroup)
 
 n = 100
 shape = (n, n)
@@ -79,14 +80,25 @@ Note:  If your aircraft uses a hybrid powertrain, you need to make the required 
 
 aircraft.add_part(
     LiftingSurface(name='Wing', mirror=True, reference=False, type_='wing'))
+aircraft.add_part(LiftingSurface(name='elevator', mirror=True, type_='htail'))
+aircraft.add_part(MiscellaneousPart(name='fuselage', mirror=False))
+aircraft.add_part(MiscellaneousPart(name='vert_tail', mirror=False))
 
 prob = Problem()
 '''
 Below you would define constants that are characteristic of your mission. If you want to change any of the other parameters of your mission, you can modify the independent variable components inside the relevant groups.
 '''
 
-group = AerodynamicsGroup(shape=shape, aircraft=aircraft, incidence_angle=0)
-prob.model.add_subsystem('group', group, promotes=['*'])
+indep = IndepVarComp()
+indep.add_output('speed', val=0, shape=shape)
+indep.add_output('sonic_speed', val=0, shape=shape)
+indep.add_output('density', val=0, shape=shape)
+indep.add_output('alpha', val=0, shape=shape)
+aero = AerodynamicsGroup(shape=shape, aircraft=aircraft)
+weights = WeightsGroup(shape=shape, aircraft=aircraft)
+prob.model.add_subsystem('indep', indep, promotes=['*'])
+prob.model.add_subsystem('aero', aero, promotes=['*'])
+prob.model.add_subsystem('weights', weights, promotes=['*'])
 '''
 The line below would check if the connections are setup for all the components even before you run the model. If there are any components that are not connected, it would list them out before running the model.
 '''
