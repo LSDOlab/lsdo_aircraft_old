@@ -6,7 +6,7 @@ from lsdo_aircraft.api import (AerodynamicsGroup, DynamicPressureComp,
                                OswaldEfficiencyComp, ParasiticDragCoeffComp,
                                ReynoldsComp, SkinFrictionCoeffComp, Body,
                                LiftingSurface, NonliftingSurface, Rotor,
-                               WeightsGroup, AtmosphereGroup)
+                               WeightsGroup, AtmosphereGroup, AnalysisGroup)
 
 n = 100
 shape = (n, n)
@@ -78,11 +78,11 @@ Lines 21-28 specify the type of propulsion system that will be used for your air
 Note:  If your aircraft uses a hybrid powertrain, you need to make the required links between different             modules.
 '''
 
-aircraft.add_part(LiftingSurface(name='wing', mirror=True, type_='wing'))
-aircraft.add_part(LiftingSurface(name='elevator', mirror=True, type_='htail'))
-aircraft.add_part(NonliftingSurface(name='fuselage', mirror=False))
-aircraft.add_part(NonliftingSurface(name='vert_tail', mirror=False))
-# aircraft.add_part(NonliftingSurface(name='vert_tail', mirror=False))
+aircraft.add_part(LiftingSurface(name='wing', type_='wing'))
+aircraft.add_part(LiftingSurface(name='elevator', type_='htail'))
+aircraft.add_part(NonliftingSurface(name='fuselage', ))
+aircraft.add_part(NonliftingSurface(name='vert_tail', ))
+# aircraft.add_part(NonliftingSurface(name='vert_tail', ))
 
 prob = Problem()
 '''
@@ -95,13 +95,15 @@ indep.add_output('altitude', val=30, shape=shape)
 # indep.add_output('density', val=0, shape=shape)
 # indep.add_output('alpha', val=0, shape=shape)
 # indep.add_output('sweep', val=0, shape=shape)
-atmos = AtmosphereGroup(shape=shape, module=None)
-aero = AerodynamicsGroup(shape=shape, aircraft=aircraft)
-weights = WeightsGroup(shape=shape, aircraft=aircraft)
+# atmos = AtmosphereGroup(shape=shape, module=None)
+# aero = AerodynamicsGroup(shape=shape, aircraft=aircraft)
+# weights = WeightsGroup(shape=shape, aircraft=aircraft)
+an = AnalysisGroup(shape=shape, aircraft=aircraft)
 prob.model.add_subsystem('indep', indep, promotes=['*'])
-prob.model.add_subsystem('atmos', atmos, promotes=['*'])
-prob.model.add_subsystem('aero', aero, promotes=['*'])
-prob.model.add_subsystem('weights', weights, promotes=['*'])
+prob.model.add_subsystem('an', an, promotes=['*'])
+# prob.model.add_subsystem('atmos', atmos, promotes=['*'])
+# prob.model.add_subsystem('aero', aero, promotes=['*'])
+# prob.model.add_subsystem('weights', weights, promotes=['*'])
 '''
 The line below would check if the connections are setup for all the components even before you run the model. If there are any components that are not connected, it would list them out before running the model.
 '''

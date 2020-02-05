@@ -25,5 +25,7 @@ from lsdo_aircraft.geometry.body import Body
 from lsdo_aircraft.geometry.lifting_surface import LiftingSurface
 from lsdo_aircraft.geometry.nonlifting_surface import NonliftingSurface
 from lsdo_aircraft.geometry.rotor import Rotor
+from lsdo_aircraft.geometry.geometry_group import GeometryGroup
 from lsdo_aircraft.weights.weights_group import WeightsGroup
 from lsdo_aircraft.atmosphere.atmosphere_group import AtmosphereGroup
+from lsdo_aircraft.analysis.analysis_group import AnalysisGroup

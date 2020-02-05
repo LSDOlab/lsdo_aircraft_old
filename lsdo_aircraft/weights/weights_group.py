@@ -78,29 +78,14 @@ class WeightsGroup(Group):
 
         for lifting_surface in aircraft['lifting_surfaces']:
             name = lifting_surface['name']
-            mirror = lifting_surface['mirror']
             type_ = lifting_surface['type_']
-            cg = lifting_surface['cg_loc']
+            cg = lifting_surface['cg']
             area = lifting_surface['area']
             aspect_ratio = lifting_surface['aspect_ratio']
             sweep_deg = lifting_surface['sweep_deg']
             taper_ratio = lifting_surface['taper_ratio']
 
-            if mirror:
-                sides = ['left_', 'right_']
-            else:
-                sides = ['']
-
             group = Group()
-
-            comp = IndepVarComp()
-            comp.add_output('cg', val=cg, shape=shape)
-            comp.add_output('area', val=area, shape=shape)
-            comp.add_output('aspect_ratio', val=aspect_ratio, shape=shape)
-            comp.add_output('sweep_deg', val=sweep_deg, shape=shape)
-            comp.add_output('taper_ratio', val=taper_ratio, shape=shape)
-            # comp.add_design_var('cg', lower=0.)
-            group.add_subsystem('inputs_comp', comp, promotes=['*'])
 
             if type_ == 'wing':
                 comp = WingWeightComp(shape=shape,
@@ -117,42 +102,30 @@ class WeightsGroup(Group):
 
         for rotor in aircraft['rotors']:
             name = rotor['name']
-            mirror = rotor['mirror']
             rotor_weight_frac = rotor['rotor_weight_frac']
 
-            if mirror:
-                sides = ['left_', 'right_']
-            else:
-                sides = ['']
+            comp = ArrayReshapeComp(
+                in_name='power',
+                out_name='power_tmp',
+                in_shape=shape,
+                out_shape=(1, size),
+            )
+            group.add_subsystem('power_reshape_comp', comp, promotes=['*'])
 
-            for side in sides:
+            comp = KSComp(
+                in_name='power_tmp',
+                out_name='max_power_scalar_tmp',
+                shape=(1, ),
+                constraint_size=size,
+                lower_flag=False,
+                rho=100.,
+                bound=0.,
+            )
+            group.add_subsystem('max_power_scalar_tmp_comp',
+                                comp,
+                                promotes=['*'])
 
-                comp = ArrayReshapeComp(
-                    in_name='power',
-                    out_name='power_tmp',
-                    in_shape=shape,
-                    out_shape=(1, size),
-                )
-                group.add_subsystem('power_reshape_comp', comp, promotes=['*'])
-
-                comp = KSComp(
-                    in_name='power_tmp',
-                    out_name='max_power_scalar_tmp',
-                    shape=(1, ),
-                    constraint_size=size,
-                    lower_flag=False,
-                    rho=100.,
-                    bound=0.,
-                )
-                group.add_subsystem('max_power_scalar_tmp_comp',
-                                    comp,
-                                    promotes=['*'])
-
-                self.add_subsystem('{}_weights_tmp_group'.format(side + name),
-                                   group)
-
-            if len(sides) == 1:
-                raise Exception()
+            self.add_subsystem('{}_weights_tmp_group'.format(name), group)
 
             comp = Max2Comp(
                 in1_name='left_max_power_scalar_tmp',
@@ -162,71 +135,60 @@ class WeightsGroup(Group):
             )
             self.add_subsystem('{}_weights_tmp_comp'.format(name), comp)
 
-            for side in sides:
-                group = Group()
+            group = Group()
 
-                comp = ScalarExpansionComp(
-                    shape=shape,
-                    in_name='max_power_scalar',
-                    out_name='max_power',
-                )
-                group.add_subsystem('max_power_comp', comp, promotes=['*'])
+            comp = ScalarExpansionComp(
+                shape=shape,
+                in_name='max_power_scalar',
+                out_name='max_power',
+            )
+            group.add_subsystem('max_power_comp', comp, promotes=['*'])
 
-                comp = MotorWeightComp(shape=shape, rotor=rotor)
-                group.add_subsystem('motor_weight_comp', comp, promotes=['*'])
+            comp = MotorWeightComp(shape=shape, rotor=rotor)
+            group.add_subsystem('motor_weight_comp', comp, promotes=['*'])
 
-                comp = ScalingComp(
-                    shape=shape,
-                    in_name='motor_weight',
-                    out_name='rotor_weight',
-                    c=rotor_weight_frac,
-                )
-                group.add_subsystem('rotor_weight_comp', comp, promotes=['*'])
+            comp = ScalingComp(
+                shape=shape,
+                in_name='motor_weight',
+                out_name='rotor_weight',
+                c=rotor_weight_frac,
+            )
+            group.add_subsystem('rotor_weight_comp', comp, promotes=['*'])
 
-                comp = LinearCombinationComp(
-                    shape=shape,
-                    in_names=['motor_weight', 'rotor_weight'],
-                    out_name='weight',
-                    coeffs=[1., 1.],
-                )
-                group.add_subsystem('weight_comp', comp, promotes=['*'])
+            comp = LinearCombinationComp(
+                shape=shape,
+                in_names=['motor_weight', 'rotor_weight'],
+                out_name='weight',
+                coeffs=[1., 1.],
+            )
+            group.add_subsystem('weight_comp', comp, promotes=['*'])
 
-                self.add_subsystem('{}_weights_group'.format(side + name),
-                                   group)
-                part_group_names.append('{}'.format(side + name))
+            self.add_subsystem('{}_weights_group'.format(name), group)
+            part_group_names.append('{}'.format(name))
 
         for nonlifting_surface in aircraft['nonlifting_surfaces']:
             name = nonlifting_surface['name']
-            mirror = nonlifting_surface['mirror']
             weight = nonlifting_surface['weight']
 
-            if mirror:
-                sides = ['left_', 'right_']
-            else:
-                sides = ['']
+            group = Group()
 
-            for side in sides:
-                group = Group()
+            comp = IndepVarComp()
+            comp.add_output('weight_scalar', val=weight)
+            group.add_subsystem('inputs_comp', comp, promotes=['*'])
+            # group = Group()
+            # comp = IndepVarComp()
+            # # comp.add_design_var('cg', lower=0.)
+            # group.add_subsystem('cg_comp', comp, promotes=['*'])
 
-                comp = IndepVarComp()
-                comp.add_output('weight_scalar', val=weight)
-                comp.add_output('cg', val=cg, shape=shape)
-                group.add_subsystem('inputs_comp', comp, promotes=['*'])
-                # group = Group()
-                # comp = IndepVarComp()
-                # # comp.add_design_var('cg', lower=0.)
-                # group.add_subsystem('cg_comp', comp, promotes=['*'])
+            comp = ScalarExpansionComp(
+                shape=shape,
+                in_name='weight_scalar',
+                out_name='weight',
+            )
+            group.add_subsystem('weight_comp', comp, promotes=['*'])
 
-                comp = ScalarExpansionComp(
-                    shape=shape,
-                    in_name='weight_scalar',
-                    out_name='weight',
-                )
-                group.add_subsystem('weight_comp', comp, promotes=['*'])
-
-                self.add_subsystem('{}_weights_group'.format(side + name),
-                                   group)
-                part_group_names.append('{}'.format(side + name))
+            self.add_subsystem('{}_weights_group'.format(name), group)
+            part_group_names.append('{}'.format(name))
 
         comp = LinearCombinationComp(
             shape=shape,
@@ -275,28 +237,3 @@ class WeightsGroup(Group):
         self.add_subsystem('gross_weight_constraint_kN_comp',
                            comp,
                            promotes=['*'])
-
-        for lifting_surface in aircraft['lifting_surfaces']:
-            name = lifting_surface['name']
-            self.connect(
-                '{}_weights_group.weight'.format(side + name),
-                '{}_weight'.format(name),
-            )
-        for lifting_surface in aircraft['lifting_surfaces']:
-            name = lifting_surface['name']
-            self.connect(
-                '{}_weights_group.cg'.format(side + name),
-                '{}_cg'.format(name),
-            )
-        for nonlifting_surface in aircraft['nonlifting_surfaces']:
-            name = nonlifting_surface['name']
-            self.connect(
-                '{}_weights_group.weight'.format(side + name),
-                '{}_weight'.format(name),
-            )
-        for nonlifting_surface in aircraft['nonlifting_surfaces']:
-            name = nonlifting_surface['name']
-            self.connect(
-                '{}_weights_group.cg'.format(side + name),
-                '{}_cg'.format(name),
-            )
