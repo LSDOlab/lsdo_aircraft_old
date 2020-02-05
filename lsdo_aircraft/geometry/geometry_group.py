@@ -34,6 +34,7 @@ class GeometryGroup(Group):
             aspect_ratio = lifting_surface['aspect_ratio']
             sweep_deg = lifting_surface['sweep_deg']
             taper_ratio = lifting_surface['taper_ratio']
+            t_c = lifting_surface['t_c']
             comp.add_output('{}_area'.format(name), val=area, shape=shape)
             comp.add_output('{}_aspect_ratio'.format(name),
                             val=aspect_ratio,
@@ -44,7 +45,7 @@ class GeometryGroup(Group):
             comp.add_output('{}_taper_ratio'.format(name),
                             val=taper_ratio,
                             shape=shape)
-            comp.add_output('{}_cg'.format(name), val=cg, shape=shape)
+            comp.add_output('{}_t_c'.format(name), val=t_c, shape=shape)
         for nonlifting_surface in aircraft['nonlifting_surfaces']:
             name = nonlifting_surface['name']
             cg = nonlifting_surface['cg']

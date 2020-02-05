@@ -19,6 +19,8 @@ from lsdo_aircraft.aerodynamics.induced_drag_coeff_comp import \
     InducedDragCoeffComp
 from lsdo_aircraft.aerodynamics.wave_drag_coeff_comp import \
     WaveDragCoeffComp
+from lsdo_aircraft.aerodynamics.critical_mach_comp import \
+    CriticalMachComp
 from lsdo_aircraft.aerodynamics.lift_coeff_comp import LiftCoeffComp
 from lsdo_aircraft.aerodynamics.lift_curve_slope_comp import LiftCurveSlopeComp
 from lsdo_aircraft.aerodynamics.lift_curve_slope_tmp_comp import \
@@ -172,6 +174,8 @@ class AerodynamicsGroup(Group):
 
             # Wave drag ----------------------------------------------------
 
+            comp = CriticalMachComp(shape=shape)
+            group.add_subsystem('critical_mach_comp', comp, promotes=['*'])
             comp = WaveDragCoeffComp(shape=shape)
             group.add_subsystem('wave_drag_coeff_comp', comp, promotes=['*'])
 

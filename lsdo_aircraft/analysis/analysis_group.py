@@ -94,6 +94,10 @@ class AnalysisGroup(Group):
                 '{}_taper_ratio'.format(name),
                 '{}_weights_group.taper_ratio'.format(name),
             )
+            self.connect(
+                '{}_t_c'.format(name),
+                '{}_aerodynamics_group.t_c'.format(name),
+            )
         for nonlifting_surface in aircraft['nonlifting_surfaces']:
             name = nonlifting_surface['name']
             self.connect(
