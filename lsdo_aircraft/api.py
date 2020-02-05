@@ -21,8 +21,9 @@ from lsdo_aircraft.aerodynamics.oswald_efficiency_comp import OswaldEfficiencyCo
 from lsdo_aircraft.aerodynamics.parasitic_drag_coeff_comp import ParasiticDragCoeffComp
 from lsdo_aircraft.aerodynamics.reynolds_comp import ReynoldsComp
 from lsdo_aircraft.aerodynamics.skin_friction_coeff_comp import SkinFrictionCoeffComp
-from lsdo_aircraft.geometry.aircraft import Aircraft
+from lsdo_aircraft.geometry.body import Body
 from lsdo_aircraft.geometry.lifting_surface import LiftingSurface
-from lsdo_aircraft.geometry.miscellaneous_part import MiscellaneousPart
+from lsdo_aircraft.geometry.nonlifting_surface import NonliftingSurface
 from lsdo_aircraft.geometry.rotor import Rotor
 from lsdo_aircraft.weights.weights_group import WeightsGroup
+from lsdo_aircraft.atmosphere.atmosphere_group import AtmosphereGroup

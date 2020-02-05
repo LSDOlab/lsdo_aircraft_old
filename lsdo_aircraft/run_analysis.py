@@ -4,9 +4,9 @@ from lsdo_aircraft.api import (AerodynamicsGroup, DynamicPressureComp,
                                ForceCoeffComp, ForceComp, LiftCoeffComp,
                                LiftCurveSlopeComp, LiftingSurfaceFFComp,
                                OswaldEfficiencyComp, ParasiticDragCoeffComp,
-                               ReynoldsComp, SkinFrictionCoeffComp, Aircraft,
-                               LiftingSurface, MiscellaneousPart, Rotor,
-                               WeightsGroup)
+                               ReynoldsComp, SkinFrictionCoeffComp, Body,
+                               LiftingSurface, NonliftingSurface, Rotor,
+                               WeightsGroup, AtmosphereGroup)
 
 n = 100
 shape = (n, n)
@@ -15,7 +15,7 @@ Change 'n' to change the shape of the inputs and outputs of your components. Thi
 that was seen previously in run.py.
 '''
 
-aircraft = Aircraft()
+aircraft = Body()
 '''
 Lines 21-28 specify the type of propulsion system that will be used for your aircraft.
 
@@ -78,26 +78,28 @@ Lines 21-28 specify the type of propulsion system that will be used for your air
 Note:  If your aircraft uses a hybrid powertrain, you need to make the required links between different             modules.
 '''
 
-aircraft.add_part(
-    LiftingSurface(name='Wing', mirror=True, reference=False, type_='wing'))
+aircraft.add_part(LiftingSurface(name='wing', mirror=True, type_='wing'))
 aircraft.add_part(LiftingSurface(name='elevator', mirror=True, type_='htail'))
-aircraft.add_part(MiscellaneousPart(name='fuselage', mirror=False))
-aircraft.add_part(MiscellaneousPart(name='vert_tail', mirror=False))
+aircraft.add_part(NonliftingSurface(name='fuselage', mirror=False))
+aircraft.add_part(NonliftingSurface(name='vert_tail', mirror=False))
+# aircraft.add_part(NonliftingSurface(name='vert_tail', mirror=False))
 
 prob = Problem()
 '''
 Below you would define constants that are characteristic of your mission. If you want to change any of the other parameters of your mission, you can modify the independent variable components inside the relevant groups.
 '''
-
 indep = IndepVarComp()
 indep.add_output('speed', val=0, shape=shape)
-indep.add_output('sonic_speed', val=0, shape=shape)
-indep.add_output('density', val=0, shape=shape)
-indep.add_output('alpha', val=0, shape=shape)
-aero = AerodynamicsGroup(shape=shape, aircraft=aircraft)
+# indep.add_output('sonic_speed', val=0, shape=shape)
+# indep.add_output('density', val=0, shape=shape)
+# indep.add_output('alpha', val=0, shape=shape)
+# indep.add_output('sweep', val=0, shape=shape)
+# atmos = AtmosphereGroup(shape=shape, module=None)
+# aero = AerodynamicsGroup(shape=shape, aircraft=aircraft)
 weights = WeightsGroup(shape=shape, aircraft=aircraft)
 prob.model.add_subsystem('indep', indep, promotes=['*'])
-prob.model.add_subsystem('aero', aero, promotes=['*'])
+# prob.model.add_subsystem('atmos', atmos, promotes=['*'])
+# prob.model.add_subsystem('aero', aero, promotes=['*'])
 prob.model.add_subsystem('weights', weights, promotes=['*'])
 '''
 The line below would check if the connections are setup for all the components even before you run the model. If there are any components that are not connected, it would list them out before running the model.

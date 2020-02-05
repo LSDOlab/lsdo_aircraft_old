@@ -4,8 +4,8 @@ from lsdo_aircraft.api import (AerodynamicsGroup, DynamicPressureComp,
                                ForceCoeffComp, ForceComp, LiftCoeffComp,
                                LiftCurveSlopeComp, LiftingSurfaceFFComp,
                                OswaldEfficiencyComp, ParasiticDragCoeffComp,
-                               ReynoldsComp, SkinFrictionCoeffComp, Aircraft,
-                               LiftingSurface, MiscellaneousPart, Rotor)
+                               ReynoldsComp, SkinFrictionCoeffComp, Body,
+                               LiftingSurface, NonliftingSurface, Rotor)
 
 n = 100
 shape = (n, n)
@@ -14,7 +14,7 @@ Change 'n' to change the shape of the inputs and outputs of your components. Thi
 that was seen previously in run.py.
 '''
 
-aircraft = Aircraft()
+aircraft = Body()
 '''
 Lines 21-28 specify the type of propulsion system that will be used for your aircraft.
 

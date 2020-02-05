@@ -17,8 +17,6 @@ from lsdo_aircraft.aerodynamics.force_coeff_comp import ForceCoeffComp
 from lsdo_aircraft.aerodynamics.force_comp import ForceComp
 from lsdo_aircraft.aerodynamics.induced_drag_coeff_comp import \
     InducedDragCoeffComp
-from lsdo_aircraft.aerodynamics.wave_drag_coeff_comp import \
-    WaveDragCoeffComp
 from lsdo_aircraft.aerodynamics.lift_coeff_comp import LiftCoeffComp
 from lsdo_aircraft.aerodynamics.lift_curve_slope_comp import LiftCurveSlopeComp
 from lsdo_aircraft.aerodynamics.lift_curve_slope_tmp_comp import \
@@ -36,11 +34,20 @@ from lsdo_aircraft.aerodynamics.dynamic_pressure_comp import DynamicPressureComp
 # from lsdo_utils.api import OptionsDictionary, float_types, units
 from lsdo_utils.api import float_types
 
+from lsdo_utils.comps.arithmetic_comps.scaling_comp import ScalingComp
 
-class AerodynamicsGroup(Group):
+from lsdo_aircraft.weights.wing_weight_comp import WingWeightComp
+from lsdo_aircraft.weights.htail_weight_comp import HTailWeightComp
+from lsdo_aircraft.weights.motor_weight_comp import MotorWeightComp
+from lsdo_aircraft.weights.cg_comp import CGComp
+from lsdo_aircraft.weights.max_2_comp import Max2Comp
+from lsdo_aircraft.api import Rotor, LiftingSurface, NonliftingSurface
+
+
+class AnalysisGroup(Group):
     def initialize(self):
         self.options.declare('shape', types=tuple)
-        self.options.declare('aircraft', types=Body)
+        self.options.declare('aircraft', types=Aircraft)
         # self.options.declare('fltcond', types=FlightCondition)
 
     def setup(self):
@@ -51,8 +58,7 @@ class AerodynamicsGroup(Group):
         for lifting_surface in aircraft['lifting_surfaces']:
             name = lifting_surface['name']
             mirror = lifting_surface['mirror']
-            sweep = lifting_surface['sweep']
-            mac = lifting_surface['mac']
+            reference = lifting_surface['reference']
 
             if mirror:
                 sides = ['left_', 'right_']
@@ -62,12 +68,10 @@ class AerodynamicsGroup(Group):
             group = Group()
 
             comp = IndepVarComp()
-            # comp.add_output('incidence_angle', val=0., shape=shape)
-            comp.add_output('sweep', val=sweep, shape=shape)
-            comp.add_output('mac', val=sweep, shape=shape)
-            # comp.add_design_var('incidence_angle',
-            #                     lower=-8. * np.pi / 180.,
-            #                     upper=10. * np.pi / 180.)
+            comp.add_output('incidence_angle', val=0., shape=shape)
+            comp.add_design_var('incidence_angle',
+                                lower=-8. * np.pi / 180.,
+                                upper=10. * np.pi / 180.)
             group.add_subsystem('inputs_comp', comp, promotes=['*'])
 
             comp = LinearCombinationComp(
@@ -90,13 +94,13 @@ class AerodynamicsGroup(Group):
                         [1. for side in sides])))
             group.add_subsystem('area_comp', comp, promotes=['*'])
 
-            # if reference:
-            #     comp = LinearCombinationComp(
-            #         shape=shape,
-            #         out_name='ref_area',
-            #         coeffs_dict=dict(area=1., ),
-            #     )
-            #     group.add_subsystem('ref_area_comp', comp, promotes=['*'])
+            if reference:
+                comp = LinearCombinationComp(
+                    shape=shape,
+                    out_name='ref_area',
+                    coeffs_dict=dict(area=1., ),
+                )
+                group.add_subsystem('ref_area_comp', comp, promotes=['*'])
 
             comp = LinearCombinationComp(
                 shape=shape,
@@ -182,19 +186,13 @@ class AerodynamicsGroup(Group):
                                 comp,
                                 promotes=['*'])
 
-            # Wave drag ----------------------------------------------------
-
-            comp = WaveDragCoeffComp(shape=shape)
-            group.add_subsystem('wave_drag_coeff_comp', comp, promotes=['*'])
-
             # Total drag ------------------------------------------------------
 
             comp = LinearCombinationComp(
                 shape=shape,
                 out_name='drag_coeff',
                 coeffs_dict=dict(parasitic_drag_coeff=1.,
-                                 induced_drag_coeff=1.,
-                                 wave_drag_coeff=0),
+                                 induced_drag_coeff=1.),
             )
             group.add_subsystem('drag_coeff_comp', comp, promotes=['*'])
 
@@ -205,12 +203,12 @@ class AerodynamicsGroup(Group):
 
             # -------------------------------------------------------
 
-            # if reference:
-            #     promotes = ['ref_area', 'speed']
-            # else:
-            #     promotes = None
+            if reference:
+                promotes = ['ref_area']
+            else:
+                promotes = None
 
-            promotes = ['speed', 'density']
+            # promotes = ['speed', 'density']
             self.add_subsystem('{}_aerodynamics_group'.format(name),
                                group,
                                promotes=promotes)
@@ -293,7 +291,7 @@ class AerodynamicsGroup(Group):
             shape=shape,
             coeff_name='total_lift_coeff',
             force_name='total_lift',
-            area_name='area',
+            area_name='ref_area',
         )
         self.add_subsystem('total_lift_coeff_comp', comp, promotes=['*'])
 
@@ -301,25 +299,9 @@ class AerodynamicsGroup(Group):
             shape=shape,
             coeff_name='total_drag_coeff',
             force_name='total_drag',
-            area_name='area',
+            area_name='ref_area',
         )
         self.add_subsystem('total_drag_coeff_comp', comp, promotes=['*'])
-        for lifting_surface in aircraft['lifting_surfaces']:
-            name = lifting_surface['name']
-            self.connect(
-                '{}_aerodynamics_group.drag'.format(side + name),
-                '{}_aerodynamics_group_drag'.format(name),
-            )
-            self.connect(
-                '{}_aerodynamics_group.lift'.format(side + name),
-                '{}_aerodynamics_group_lift'.format(name),
-            )
-        for nonlifting_surface in aircraft['nonlifting_surfaces']:
-            name = nonlifting_surface['name']
-            self.connect(
-                '{}_aerodynamics_group.drag'.format(side + name),
-                '{}_aerodynamics_group_drag'.format(name),
-            )
 
     def connect_dependencies(self, group):
         aircraft = self.options['aircraft']

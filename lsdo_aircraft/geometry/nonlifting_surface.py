@@ -1,7 +1,7 @@
 from lsdo_utils.api import OptionsDictionary, float_types, units
 
 
-class MiscellaneousPart(OptionsDictionary):
+class NonliftingSurface(OptionsDictionary):
     def initialize(self):
         self.declare('name', types=str)
         self.declare('u')

@@ -15,13 +15,13 @@ from lsdo_aircraft.weights.htail_weight_comp import HTailWeightComp
 from lsdo_aircraft.weights.motor_weight_comp import MotorWeightComp
 from lsdo_aircraft.weights.cg_comp import CGComp
 from lsdo_aircraft.weights.max_2_comp import Max2Comp
-from lsdo_aircraft.api import Aircraft, Rotor, LiftingSurface, MiscellaneousPart
+from lsdo_aircraft.api import Body, Rotor, LiftingSurface, NonliftingSurface
 
 
 class WeightsGroup(Group):
     def initialize(self):
         self.options.declare('shape', types=tuple)
-        self.options.declare('aircraft', types=Aircraft)
+        self.options.declare('aircraft', types=Body)
 
     def setup(self):
         shape = self.options['shape']
@@ -36,57 +36,49 @@ class WeightsGroup(Group):
         # comp.add_design_var('gross_weight_guess_scalar', lower=0., scaler=1.e-3)
         self.add_subsystem('inputs_comp', comp, promotes=['*'])
 
+        # comp = DynamicPressureComp(
+        #     shape=shape,
+        #     rho_name='density',
+        #     v_name='speed',
+        #     dynamic_pressure_name='dynamic_pressure',
+        # )
+        # self.add_subsystem('dynamic_pressure_comp', comp, promotes=['*'])
+
+        # comp = ArrayReshapeComp(
+        #     in_name='dynamic_pressure',
+        #     out_name='dynamic_pressure_tmp',
+        #     in_shape=shape,
+        #     out_shape=(1, size),
+        # )
+        # self.add_subsystem('dynamic_pressure_reshape_comp',
+        #                    comp,
+        #                    promotes=['*'])
+
+        # comp = KSComp(
+        #     in_name='dynamic_pressure_tmp',
+        #     out_name='max_dynamic_pressure_scalar',
+        #     shape=(1, ),
+        #     constraint_size=size,
+        #     lower_flag=False,
+        #     rho=100.,
+        #     bound=0.,
+        # )
+        # self.add_subsystem('max_dynamic_pressure_scalar_comp',
+        #                    comp,
+        #                    promotes=['*'])
+
         # comp = ScalarExpansionComp(
         #     shape=shape,
-        #     in_name='gross_weight_guess_scalar',
-        #     out_name='gross_weight_guess',
+        #     in_name='max_dynamic_pressure_scalar',
+        #     out_name='max_dynamic_pressure',
         # )
-        # self.add_subsystem('gross_weight_guess_comp', comp, promotes=['*'])
-
-        comp = DynamicPressureComp(
-            shape=shape,
-            rho_name='density',
-            v_name='speed',
-            dynamic_pressure_name='dynamic_pressure',
-        )
-        self.add_subsystem('dynamic_pressure_comp', comp, promotes=['*'])
-
-        comp = ArrayReshapeComp(
-            in_name='dynamic_pressure',
-            out_name='dynamic_pressure_tmp',
-            in_shape=shape,
-            out_shape=(1, size),
-        )
-        self.add_subsystem('dynamic_pressure_reshape_comp',
-                           comp,
-                           promotes=['*'])
-
-        comp = KSComp(
-            in_name='dynamic_pressure_tmp',
-            out_name='max_dynamic_pressure_scalar',
-            shape=(1, ),
-            constraint_size=size,
-            lower_flag=False,
-            rho=100.,
-            bound=0.,
-        )
-        self.add_subsystem('max_dynamic_pressure_scalar_comp',
-                           comp,
-                           promotes=['*'])
-
-        comp = ScalarExpansionComp(
-            shape=shape,
-            in_name='max_dynamic_pressure_scalar',
-            out_name='max_dynamic_pressure',
-        )
-        self.add_subsystem('max_dynamic_pressure_comp', comp, promotes=['*'])
+        # self.add_subsystem('max_dynamic_pressure_comp', comp, promotes=['*'])
 
         part_group_names = []
 
         for lifting_surface in aircraft['lifting_surfaces']:
             name = lifting_surface['name']
             mirror = lifting_surface['mirror']
-            reference = lifting_surface['reference']
             type_ = lifting_surface['type_']
 
             if mirror:
@@ -190,10 +182,10 @@ class WeightsGroup(Group):
                                    group)
                 part_group_names.append('{}'.format(side + name))
 
-        for miscellaneous_part in aircraft['miscellaneous_parts']:
-            name = miscellaneous_part['name']
-            mirror = miscellaneous_part['mirror']
-            weight = miscellaneous_part['weight']
+        for nonlifting_surface in aircraft['nonlifting_surfaces']:
+            name = nonlifting_surface['name']
+            mirror = nonlifting_surface['mirror']
+            weight = nonlifting_surface['weight']
 
             if mirror:
                 sides = ['left_', 'right_']
@@ -266,6 +258,13 @@ class WeightsGroup(Group):
                            comp,
                            promotes=['*'])
 
+        for lifting_surface in aircraft['lifting_surfaces']:
+            name = lifting_surface['name']
+            self.connect(
+                '{}_aerodynamics_group.drag'.format(side + name),
+                '{}_aerodynamics_group_drag'.format(name),
+            )
+
     def connect_dependencies(self, group):
         aircraft = self.options['aircraft']
 
@@ -280,14 +279,14 @@ class WeightsGroup(Group):
             else:
                 sides = ['']
 
-            group.connect(
-                '{}_aerodynamics_group.area'.format(name),
-                '{}_weights_group.area'.format(name),
-            )
-            group.connect(
-                'max_dynamic_pressure',
-                '{}_weights_group.max_dynamic_pressure'.format(name),
-            )
+            # group.connect(
+            #     '{}_aerodynamics_group.area'.format(name),
+            #     '{}_weights_group.area'.format(name),
+            # )
+            # group.connect(
+            #     'max_dynamic_pressure',
+            #     '{}_weights_group.max_dynamic_pressure'.format(name),
+            # )
             group.connect(
                 '{}_aerodynamics_group.aspect_ratio'.format(name),
                 '{}_weights_group.aspect_ratio'.format(name),
@@ -352,10 +351,10 @@ class WeightsGroup(Group):
                     '{}_weights_group.max_power_scalar'.format(side + name),
                 )
 
-        for miscellaneous_part in aircraft['miscellaneous_parts']:
-            name = miscellaneous_parts['name']
-            mirror = miscellaneous_parts['mirror']
-            weight = miscellaneous_parts['weight']
+        for nonlifting_surface in aircraft['nonlifting_surfaces']:
+            name = nonlifting_surface['name']
+            mirror = nonlifting_surface['mirror']
+            weight = nonlifting_surface['weight']
 
             if mirror:
                 sides = ['left_', 'right_']

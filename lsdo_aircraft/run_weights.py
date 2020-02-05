@@ -1,6 +1,6 @@
 from openmdao.api import Problem, IndepVarComp
 
-from lsdo_aircraft.api import Body, LiftingSurface, MiscellaneousPart, Rotor, WeightsGroup
+from lsdo_aircraft.api import Body, LiftingSurface, NonliftingSurface, Rotor, WeightsGroup
 
 n = 100
 shape = (n, n)
