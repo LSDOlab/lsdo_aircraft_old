@@ -1,11 +1,7 @@
 from openmdao.api import Problem, IndepVarComp
 
-from lsdo_aircraft.api import (AerodynamicsGroup, DynamicPressureComp,
-                               ForceCoeffComp, ForceComp, LiftCoeffComp,
-                               LiftCurveSlopeComp, LiftingSurfaceFFComp,
-                               OswaldEfficiencyComp, ParasiticDragCoeffComp,
-                               ReynoldsComp, SkinFrictionCoeffComp, Body,
-                               LiftingSurface, NonliftingSurface, Rotor)
+from lsdo_aircraft.api import (AerodynamicsGroup, Body, LiftingSurface,
+                               NonliftingSurface, Rotor)
 
 n = 100
 shape = (n, n)
@@ -77,15 +73,14 @@ Lines 21-28 specify the type of propulsion system that will be used for your air
 Note:  If your aircraft uses a hybrid powertrain, you need to make the required links between different             modules.
 '''
 
-aircraft.add_part(
-    LiftingSurface(name='Wing', mirror=True, reference=False, type_='wing'))
+aircraft.add_part(LiftingSurface(name='Wing'))
 
 prob = Problem()
 '''
 Below you would define constants that are characteristic of your mission. If you want to change any of the other parameters of your mission, you can modify the independent variable components inside the relevant groups.
 '''
 
-group = AerodynamicsGroup(shape=shape, aircraft=aircraft, incidence_angle=0)
+group = AerodynamicsGroup(shape=shape, aircraft=aircraft)
 prob.model.add_subsystem('group', group, promotes=['*'])
 '''
 The line below would check if the connections are setup for all the components even before you run the model. If there are any components that are not connected, it would list them out before running the model.
