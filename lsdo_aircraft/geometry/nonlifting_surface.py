@@ -11,8 +11,8 @@ class NonliftingSurface(OptionsDictionary):
         self.declare('weight_kg', default=None)
         self.declare('weight_lb', default=None)
         self.declare('CDp', default=0., types=float_types)
-        self.declare('ref_area', default=1., types=float_types)
-        self.declare('mirror', default=True, types=bool)
+        self.declare('area', default=1., types=float_types)
+        self.declare('cg', default=0.35, types=float_types)
         if self['weight_kg'] is not None:
             self['weight'] = self['weight_kg'] * 9.81
         if self['weight_lb'] is not None:

@@ -50,14 +50,8 @@ class AerodynamicsGroup(Group):
 
         for lifting_surface in aircraft['lifting_surfaces']:
             name = lifting_surface['name']
-            mirror = lifting_surface['mirror']
             sweep_deg = lifting_surface['sweep_deg']
             mac = lifting_surface['mac']
-
-            if mirror:
-                sides = ['left_', 'right_']
-            else:
-                sides = ['']
 
             group = Group()
 
@@ -82,12 +76,9 @@ class AerodynamicsGroup(Group):
 
             # Geometry -------------------------------------------------------
 
-            comp = LinearCombinationComp(
-                shape=shape,
-                out_name='area',
-                coeffs_dict=dict(
-                    zip(['{}part_area'.format(side) for side in sides],
-                        [1. for side in sides])))
+            comp = LinearCombinationComp(shape=shape,
+                                         out_name='area',
+                                         coeffs_dict=dict(part_area=1.))
             group.add_subsystem('area_comp', comp, promotes=['*'])
 
             # if reference:
@@ -98,12 +89,9 @@ class AerodynamicsGroup(Group):
             #     )
             #     group.add_subsystem('ref_area_comp', comp, promotes=['*'])
 
-            comp = LinearCombinationComp(
-                shape=shape,
-                out_name='span',
-                coeffs_dict=dict(
-                    zip(['{}part_span'.format(side) for side in sides],
-                        [1. for side in sides])))
+            comp = LinearCombinationComp(shape=shape,
+                                         out_name='span',
+                                         coeffs_dict=dict(part_span=1.))
             group.add_subsystem('span_comp', comp, promotes=['*'])
 
             comp = PowerCombinationComp(shape=shape,
@@ -217,42 +205,33 @@ class AerodynamicsGroup(Group):
 
         for nonlifting_surface in aircraft['nonlifting_surfaces']:
             name = nonlifting_surface['name']
-            mirror = nonlifting_surface['mirror']
             CDp = nonlifting_surface['CDp']
-            area = nonlifting_surface['ref_area']
+            area = nonlifting_surface['area']
 
-            if mirror:
-                sides = ['left_', 'right_']
-            else:
-                sides = ['']
+            group = Group()
 
-            for side in sides:
-                group = Group()
+            comp = IndepVarComp()
+            comp.add_output('parasitic_drag_coeff', val=CDp, shape=shape)
+            comp.add_output('induced_drag_coeff', val=0., shape=shape)
+            comp.add_output('area', val=area, shape=shape)
+            group.add_subsystem('parasitic_drag_comp', comp, promotes=['*'])
 
-                comp = IndepVarComp()
-                comp.add_output('parasitic_drag_coeff', val=CDp, shape=shape)
-                comp.add_output('induced_drag_coeff', val=0., shape=shape)
-                comp.add_output('area', val=area, shape=shape)
-                group.add_subsystem('parasitic_drag_comp',
-                                    comp,
-                                    promotes=['*'])
+            comp = LinearCombinationComp(
+                shape=shape,
+                out_name='drag_coeff',
+                coeffs_dict=dict(parasitic_drag_coeff=1.,
+                                 induced_drag_coeff=1.),
+            )
+            group.add_subsystem('drag_coeff_comp', comp, promotes=['*'])
 
-                comp = LinearCombinationComp(
-                    shape=shape,
-                    out_name='drag_coeff',
-                    coeffs_dict=dict(parasitic_drag_coeff=1.,
-                                     induced_drag_coeff=1.),
-                )
-                group.add_subsystem('drag_coeff_comp', comp, promotes=['*'])
+            comp = ForceComp(shape=shape,
+                             coeff_name='drag_coeff',
+                             force_name='drag')
+            group.add_subsystem('drag_comp', comp, promotes=['*'])
 
-                comp = ForceComp(shape=shape,
-                                 coeff_name='drag_coeff',
-                                 force_name='drag')
-                group.add_subsystem('drag_comp', comp, promotes=['*'])
-
-                self.add_subsystem('{}_aerodynamics_group'.format(side + name),
-                                   group,
-                                   promotes=promotes)
+            self.add_subsystem('{}_aerodynamics_group'.format(name),
+                               group,
+                               promotes=promotes)
 
         lift_names = []
         drag_names = []
@@ -264,16 +243,8 @@ class AerodynamicsGroup(Group):
 
         for nonlifting_surface in aircraft['nonlifting_surfaces']:
             name = nonlifting_surface['name']
-            mirror = nonlifting_surface['mirror']
 
-            if mirror:
-                sides = ['left_', 'right_']
-            else:
-                sides = ['']
-
-            for side in sides:
-                drag_names.append('{}_aerodynamics_group_drag'.format(side +
-                                                                      name))
+            drag_names.append('{}_aerodynamics_group_drag'.format(name))
 
         comp = LinearCombinationComp(
             shape=shape,
@@ -307,16 +278,16 @@ class AerodynamicsGroup(Group):
         for lifting_surface in aircraft['lifting_surfaces']:
             name = lifting_surface['name']
             self.connect(
-                '{}_aerodynamics_group.drag'.format(side + name),
+                '{}_aerodynamics_group.drag'.format(name),
                 '{}_aerodynamics_group_drag'.format(name),
             )
             self.connect(
-                '{}_aerodynamics_group.lift'.format(side + name),
+                '{}_aerodynamics_group.lift'.format(name),
                 '{}_aerodynamics_group_lift'.format(name),
             )
         for nonlifting_surface in aircraft['nonlifting_surfaces']:
             name = nonlifting_surface['name']
             self.connect(
-                '{}_aerodynamics_group.drag'.format(side + name),
+                '{}_aerodynamics_group.drag'.format(name),
                 '{}_aerodynamics_group_drag'.format(name),
             )
