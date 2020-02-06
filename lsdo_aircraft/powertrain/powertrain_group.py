@@ -17,7 +17,7 @@ class PowertrainGroup(Group):
             name = module['name']
             group_class = module['group_class']
 
-            group = group_class(shape=shape, module=module)
+            group = group_class(shape=shape, options_dictionary=module)
             self.add_subsystem('{}_group'.format(name), group, promotes=group.promotes)
 
         for src_name, src_var_names, tgt_name, tgt_var_names in powertrain.links:
