@@ -7,13 +7,13 @@ class SimpleBatteryGroup(Group):
 
     def initialize(self):
         self.options.declare('shape', types=tuple)
-        self.options.declare('module')
+        self.options.declare('options_dictionary')
 
         self.promotes = None
 
     def setup(self):
         shape = self.options['shape']
-        module = self.options['module']
+        module = self.options['options_dictionary']
 
         comp = IndepVarComp()
         comp.add_output('mass_scalar')

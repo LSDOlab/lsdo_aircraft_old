@@ -12,6 +12,8 @@ class Aircraft(OptionsDictionary):
     """
 
     def initialize(self):
+        self.declare('geometry', default=None, allow_none=True)
+        self.declare('analyses', default=None, allow_none=True)
         self.declare('aircraft_type', values=[
             'ga_single',
             'ga_twin',
@@ -53,6 +55,8 @@ class Aircraft(OptionsDictionary):
         self.declare('landing_distance_ft', default=6000., types=float_array_types)
         self.declare('wing_loading_lbf_ft2', default=100., types=float_array_types)
         self.declare('ref_wing_loading_lbf_ft2', default=100., types=float)
+
+        self.declare('regime', default='transonic', values=['subsonic', 'transonic'])
 
         self.declare('powertrain', default=None, allow_none=True)
 

@@ -1,297 +1,342 @@
 import numpy as np
+
 from openmdao.api import Group, IndepVarComp
 
-from lsdo_aircraft.aerodynamics.reynolds_comp import \
-    ReynoldsComp
-from lsdo_utils.comps.arithmetic_comps.linear_combination_comp import \
-    LinearCombinationComp
-from lsdo_utils.comps.arithmetic_comps.power_combination_comp import \
-    PowerCombinationComp
-from lsdo_utils.comps.arithmetic_comps.ks_comp import \
-    KSComp
-from lsdo_utils.comps.array_comps.array_reshape_comp import \
-    ArrayReshapeComp
-from lsdo_utils.comps.array_comps.scalar_expansion_comp import \
-    ScalarExpansionComp
-from lsdo_aircraft.aerodynamics.force_coeff_comp import ForceCoeffComp
-from lsdo_aircraft.aerodynamics.force_comp import ForceComp
-from lsdo_aircraft.aerodynamics.induced_drag_coeff_comp import \
-    InducedDragCoeffComp
-from lsdo_aircraft.aerodynamics.wave_drag_coeff_comp import \
-    WaveDragCoeffComp
-from lsdo_aircraft.aerodynamics.critical_mach_comp import \
-    CriticalMachComp
-from lsdo_aircraft.aerodynamics.lift_coeff_comp import LiftCoeffComp
-from lsdo_aircraft.aerodynamics.lift_curve_slope_comp import LiftCurveSlopeComp
-from lsdo_aircraft.aerodynamics.lift_curve_slope_tmp_comp import \
-    LiftCurveSlopeTmpComp
-from lsdo_aircraft.aerodynamics.lifting_surface_ff_comp import \
-    LiftingSurfaceFFComp
-from lsdo_aircraft.aerodynamics.oswald_efficiency_comp import OswaldEfficiencyComp
-from lsdo_aircraft.aerodynamics.parasitic_drag_coeff_comp import \
-    ParasiticDragCoeffComp
-from lsdo_aircraft.aerodynamics.skin_friction_coeff_comp import \
-    SkinFrictionCoeffComp
-from lsdo_aircraft.geometry.body import Body
-from lsdo_aircraft.aerodynamics.dynamic_pressure_comp import DynamicPressureComp
+from lsdo_utils.api import OptionsDictionary, LinearCombinationComp, PowerCombinationComp, LinearPowerCombinationComp, GeneralOperationComp, ElementwiseMinComp
 
-# from lsdo_utils.api import OptionsDictionary, float_types, units
-from lsdo_utils.api import float_types
+from lsdo_aircraft.aerodynamics.lift_group import LiftGroup
+from lsdo_aircraft.aerodynamics.induced_drag_group import InducedDragGroup
+from lsdo_aircraft.aerodynamics.skin_friction_group import SkinFrictionGroup
+from lsdo_aircraft.aerodynamics.wave_drag_coeff_comp import WaveDragCoeffComp
+from lsdo_aircraft.geometry.lifting_surface_geometry import LiftingSurfaceGeometry
+from lsdo_aircraft.geometry.body_geometry import BodyGeometry
+from lsdo_aircraft.geometry.part_geometry import PartGeometry
 
 
 class AerodynamicsGroup(Group):
+
+    lifting_surface_dependent_variables = [
+        'sweep',
+        'aspect_ratio',
+        'wetted_area',
+        'area',
+        'incidence_angle',
+        'characteristic_length',
+    ]
+
+    body_dependent_variables = [
+        'wetted_area',
+        'characteristic_length',
+    ]
+
     def initialize(self):
         self.options.declare('shape', types=tuple)
-        self.options.declare('aircraft', types=Body)
-        # self.options.declare('fltcond', types=FlightCondition)
+        self.options.declare('aircraft', types=OptionsDictionary)
+        self.options.declare('geometry', types=OptionsDictionary)
+        self.options.declare('options_dictionary', types=OptionsDictionary)
+
+        self.promotes = [
+            'density', 
+            'speed', 
+            'ref_area',
+            'dynamic_viscosity', 
+            'alpha', 
+            'mach_number',
+        ]
 
     def setup(self):
         shape = self.options['shape']
         aircraft = self.options['aircraft']
-        # fltcond = self.options['fltcond']
+        geometry = self.options['geometry']
+        options_dictionary = self.options['options_dictionary']
+        
+        comp = IndepVarComp()
+        comp.add_output('dummy_var')
+        self.add_subsystem('inputs_comp', comp, promotes=['*'])
 
-        for lifting_surface in aircraft['lifting_surfaces']:
-            name = lifting_surface['name']
-            sweep_deg = lifting_surface['sweep_deg']
-            mac = lifting_surface['mac']
-
-            group = Group()
-
-            comp = IndepVarComp()
-            # comp.add_output('incidence_angle', val=0., shape=shape)
-            comp.add_output('sweep_deg', val=sweep_deg, shape=shape)
-            comp.add_output('mac', val=mac, shape=shape)
-            # comp.add_design_var('incidence_angle',
-            #                     lower=-8. * np.pi / 180.,
-            #                     upper=10. * np.pi / 180.)
-            group.add_subsystem('inputs_comp', comp, promotes=['*'])
-
-            comp = LinearCombinationComp(
-                shape=shape,
-                out_name='angle_of_attack',
-                coeffs_dict=dict(
-                    alpha=1.,
-                    incidence_angle=1.,
-                ),
-            )
-            group.add_subsystem('angle_of_attack_comp', comp, promotes=['*'])
-
-            # Geometry -------------------------------------------------------
-
-            comp = LinearCombinationComp(shape=shape,
-                                         out_name='area',
-                                         coeffs_dict=dict(part_area=1.))
-            group.add_subsystem('area_comp', comp, promotes=['*'])
-
-            # if reference:
-            #     comp = LinearCombinationComp(
-            #         shape=shape,
-            #         out_name='ref_area',
-            #         coeffs_dict=dict(area=1., ),
-            #     )
-            #     group.add_subsystem('ref_area_comp', comp, promotes=['*'])
-
-            comp = LinearCombinationComp(shape=shape,
-                                         out_name='span',
-                                         coeffs_dict=dict(part_span=1.))
-            group.add_subsystem('span_comp', comp, promotes=['*'])
-
-            comp = PowerCombinationComp(shape=shape,
-                                        out_name='span_2',
-                                        powers_dict=dict(span=2))
-            group.add_subsystem('span_2_comp', comp, promotes=['*'])
-
-            comp = PowerCombinationComp(shape=shape,
-                                        out_name='aspect_ratio',
-                                        powers_dict=dict(span_2=1, area=-1))
-            group.add_subsystem('aspect_ratio_comp', comp, promotes=['*'])
-
-            # Flow properties -------------------------------------------------------
-
-            comp = PowerCombinationComp(shape=shape,
-                                        out_name='mach_number',
-                                        powers_dict=dict(speed=1,
-                                                         sonic_speed=-1))
-            group.add_subsystem('mach_number_comp', comp, promotes=['*'])
-
-            comp = ReynoldsComp(
-                shape=shape,
-                v_name='speed',
-                L_name='mac',
-                Re_name='reynolds_number',
-            )
-            group.add_subsystem('reynolds_number_comp', comp, promotes=['*'])
-
-            # Lift -------------------------------------------------------
-
-            comp = LiftCurveSlopeTmpComp(shape=shape)
-            group.add_subsystem('lift_curve_slope_tmp_comp',
-                                comp,
-                                promotes=['*'])
-
-            comp = LiftCurveSlopeComp(shape=shape, F=lifting_surface['F'])
-            group.add_subsystem('lift_curve_slope_comp', comp, promotes=['*'])
-
-            comp = LiftCoeffComp(shape=shape, CL0=lifting_surface['CL0'])
-            comp.add_constraint('lift_coeff', upper=lifting_surface['CLmax'])
-            group.add_subsystem('lift_coeff_comp', comp, promotes=['*'])
-
-            comp = ForceComp(shape=shape,
-                             coeff_name='lift_coeff',
-                             force_name='lift')
-            group.add_subsystem('lift_comp', comp, promotes=['*'])
-
-            # Parasitic drag -------------------------------------------------------
-
-            comp = SkinFrictionCoeffComp(shape=shape)
-            group.add_subsystem('skin_friction_coeff_comp',
-                                comp,
-                                promotes=['*'])
-
-            comp = LiftingSurfaceFFComp(
-                shape=shape,
-                x_c_max_camber=lifting_surface['x_c_max_camber'],
-                t_c=lifting_surface['t_c'],
-            )
-            group.add_subsystem('lifting_surface_ff_comp',
-                                comp,
-                                promotes=['*'])
-
-            comp = ParasiticDragCoeffComp(shape=shape, Q=lifting_surface['Q'])
-            group.add_subsystem('parasitic_drag_coeff_comp',
-                                comp,
-                                promotes=['*'])
-
-            # Induced drag ----------------------------------------------------
-
-            comp = OswaldEfficiencyComp(shape=shape)
-            group.add_subsystem('oswald_efficiency_comp', comp, promotes=['*'])
-
-            comp = InducedDragCoeffComp(shape=shape)
-            group.add_subsystem('induced_drag_coeff_comp',
-                                comp,
-                                promotes=['*'])
-
-            # Wave drag ----------------------------------------------------
-
-            comp = CriticalMachComp(shape=shape)
-            group.add_subsystem('critical_mach_comp', comp, promotes=['*'])
-            comp = WaveDragCoeffComp(shape=shape)
-            group.add_subsystem('wave_drag_coeff_comp', comp, promotes=['*'])
-
-            # Total drag ------------------------------------------------------
-
-            comp = LinearCombinationComp(
-                shape=shape,
-                out_name='drag_coeff',
-                coeffs_dict=dict(parasitic_drag_coeff=1.,
-                                 induced_drag_coeff=1.,
-                                 wave_drag_coeff=0),
-            )
-            group.add_subsystem('drag_coeff_comp', comp, promotes=['*'])
-
-            comp = ForceComp(shape=shape,
-                             coeff_name='drag_coeff',
-                             force_name='drag')
-            group.add_subsystem('drag_comp', comp, promotes=['*'])
-
-            # -------------------------------------------------------
-
-            # if reference:
-            #     promotes = ['ref_area', 'speed']
-            # else:
-            #     promotes = None
-
-            promotes = ['speed', 'density']
-            self.add_subsystem('{}_aerodynamics_group'.format(name),
-                               group,
-                               promotes=promotes)
-
-        for nonlifting_surface in aircraft['nonlifting_surfaces']:
-            name = nonlifting_surface['name']
-            CDp = nonlifting_surface['CDp']
-            area = nonlifting_surface['area']
+        for part in geometry.children:
+            name = part['name']
 
             group = Group()
 
-            comp = IndepVarComp()
-            comp.add_output('parasitic_drag_coeff', val=CDp, shape=shape)
-            comp.add_output('induced_drag_coeff', val=0., shape=shape)
-            comp.add_output('area', val=area, shape=shape)
-            group.add_subsystem('parasitic_drag_comp', comp, promotes=['*'])
+            # Passthrough for area
 
-            comp = LinearCombinationComp(
+            if isinstance(part, LiftingSurfaceGeometry):
+                comp = LinearCombinationComp(
+                    shape=shape,
+                    out_name='_area',
+                    coeffs_dict=dict(
+                        area=1.,
+                    ),
+                )
+                group.add_subsystem('area_comp', comp, promotes=['*'])
+            else:
+                comp = IndepVarComp()
+                comp.add_output('_area')
+                group.add_subsystem('area_comp', comp, promotes=['*'])
+
+            # Cosine of sweep - useful for many calculations that follow
+
+            if isinstance(part, LiftingSurfaceGeometry):
+                def func(sweep): 
+                    return np.cos(sweep)
+
+                def deriv(sweep):
+                    return (-np.sin(sweep))
+
+                comp = GeneralOperationComp(
+                    shape=shape,
+                    out_name='cos_sweep',
+                    in_names=['sweep'],
+                    func=func,
+                    deriv=deriv,
+                )
+                group.add_subsystem('cos_sweep_comp', comp, promotes=['*'])
+
+            # Lift coefficient
+
+            if isinstance(part, LiftingSurfaceGeometry):
+                lift_group = LiftGroup(
+                    shape=shape,
+                    part=part,
+                )
+                group.add_subsystem('lift_group', lift_group, promotes=['*'])
+            elif isinstance(part, PartGeometry):
+                comp = LinearCombinationComp(
+                    shape=shape,
+                    out_name='dummy_comp_var',
+                    coeffs_dict=dict(
+                        ref_area=1.,
+                        alpha=1.,
+                        wetted_area=1.,
+                        characteristic_length=1.,
+                    ),
+                )
+                group.add_subsystem('dummy_comp', comp, promotes=['*'])
+
+                comp = IndepVarComp()
+                comp.add_output('lift_coeff', val=0., shape=shape)
+                group.add_subsystem('lift_coeff_comp', comp, promotes=['*'])
+            else: 
+                comp = LinearCombinationComp(
+                    shape=shape,
+                    out_name='dummy_comp_var',
+                    coeffs_dict=dict(
+                        alpha=1.,
+                    ),
+                )
+                group.add_subsystem('dummy_comp', comp, promotes=['*'])
+
+                comp = IndepVarComp()
+                comp.add_output('lift_coeff', val=0., shape=shape)
+                group.add_subsystem('lift_coeff_comp', comp, promotes=['*'])
+
+            # Induced drag coefficient
+
+            if isinstance(part, LiftingSurfaceGeometry):
+                induced_drag_group = InducedDragGroup(
+                    shape=shape,
+                    part=part,
+                )
+                group.add_subsystem('induced_drag_group', induced_drag_group, promotes=['*'])
+            else: 
+                comp = IndepVarComp()
+                comp.add_output('induced_drag_coeff', val=0., shape=shape)
+                group.add_subsystem('induced_drag_coeff_comp', comp, promotes=['*'])
+
+            # Skin friction coefficient
+            
+            skin_friction_group = SkinFrictionGroup(
                 shape=shape,
-                out_name='drag_coeff',
-                coeffs_dict=dict(parasitic_drag_coeff=1.,
-                                 induced_drag_coeff=1.),
+                aircraft=aircraft,
+                part=part,
             )
-            group.add_subsystem('drag_coeff_comp', comp, promotes=['*'])
+            group.add_subsystem('skin_friction_group', skin_friction_group, promotes=['*'])
 
-            comp = ForceComp(shape=shape,
-                             coeff_name='drag_coeff',
-                             force_name='drag')
-            group.add_subsystem('drag_comp', comp, promotes=['*'])
+            # Parasite drag coefficient---form factor
 
-            self.add_subsystem('{}_aerodynamics_group'.format(name),
-                               group,
-                               promotes=promotes)
+            if isinstance(part, LiftingSurfaceGeometry):          
+                thickness_chord = part['thickness_chord']
+                max_thickness_location = part['max_thickness_location']
 
-        lift_names = []
-        drag_names = []
-        for lifting_surface in aircraft['lifting_surfaces']:
-            name = lifting_surface['name']
+                comp = PowerCombinationComp(
+                    shape=shape,
+                    out_name='form_factor',
+                    coeff=1.34 * (1 + 0.6 / max_thickness_location * thickness_chord + 100. * thickness_chord ** 4),
+                    powers_dict=dict(
+                        mach_number=0.18,
+                        cos_sweep=0.28,
+                    ),
+                )
+                group.add_subsystem('form_factor_comp', comp, promotes=['*'])
+            elif isinstance(part, BodyGeometry):  
+                fuselage_aspect_ratio = part['fuselage_aspect_ratio']
+                comp = IndepVarComp()
+                comp.add_output('form_factor', val=1 + 60. / fuselage_aspect_ratio ** 3. + fuselage_aspect_ratio / 400., shape=shape)
+                group.add_subsystem('form_factor_comp', comp, promotes=['*'])
 
-            lift_names.append('{}_aerodynamics_group_lift'.format(name))
-            drag_names.append('{}_aerodynamics_group_drag'.format(name))
+            # Parasite drag coefficient---interference factor
 
-        for nonlifting_surface in aircraft['nonlifting_surfaces']:
-            name = nonlifting_surface['name']
+            comp = IndepVarComp()
+            comp.add_output('interference_factor', val=part['interference_factor'], shape=shape)
+            group.add_subsystem('interference_factor_comp', comp, promotes=['*'])
 
-            drag_names.append('{}_aerodynamics_group_drag'.format(name))
+            # Parasite drag coefficient
 
-        comp = LinearCombinationComp(
+            if isinstance(part, (LiftingSurfaceGeometry, BodyGeometry)):    
+                comp = PowerCombinationComp(
+                    shape=shape,
+                    out_name='parasite_drag_coeff',
+                    powers_dict=dict(
+                        skin_friction_coeff=1.,
+                        form_factor=1.,
+                        interference_factor=1.,
+                        wetted_area=1.,
+                        ref_area=-1.,
+                    ),
+                )
+                group.add_subsystem('parasite_drag_coeff_comp', comp, promotes=['*'])
+            elif isinstance(part, PartGeometry):   
+                comp = IndepVarComp()
+                comp.add_output('parasite_drag_coeff', val=part['parasite_drag_coeff'], shape=shape)
+                group.add_subsystem('parasite_drag_coeff_comp', comp, promotes=['*'])
+            else:
+                comp = IndepVarComp()
+                comp.add_output('parasite_drag_coeff', val=0., shape=shape)
+                group.add_subsystem('parasite_drag_coeff_comp', comp, promotes=['*'])
+
+            # Wave drag coefficient
+
+            if isinstance(part, LiftingSurfaceGeometry):
+                airfoil_technology_factor = part['airfoil_technology_factor']
+                thickness_chord = part['thickness_chord']
+
+                comp = LinearPowerCombinationComp(
+                    shape=shape,
+                    out_name='critical_mach_number',
+                    constant=-(0.1 / 80.) ** (1. / 3.),
+                    terms_list=[
+                        (airfoil_technology_factor, dict(
+                            cos_sweep=-1.,
+                        )),
+                        (-thickness_chord, dict(
+                            cos_sweep=-2.,
+                        )),
+                        (-0.1, dict(
+                            cos_sweep=-3.,
+                            lift_coeff=1.,
+                        )),
+                    ],
+                )
+                group.add_subsystem('critical_mach_number_comp', comp, promotes=['*'])
+
+                comp = WaveDragCoeffComp(shape=shape)
+                group.add_subsystem('wave_drag_coeff_comp', comp, promotes=['*'])
+            else:
+                comp = IndepVarComp()
+                comp.add_output('wave_drag_coeff', val=0., shape=shape)
+                group.add_subsystem('wave_drag_coeff_comp', comp, promotes=['*'])
+
+            self.add_subsystem('{}_group'.format(name), group, promotes=[
+                'density', 
+                'speed', 
+                'ref_area',
+                'dynamic_viscosity', 
+                'alpha', 
+                'mach_number',
+            ])
+
+        # 
+
+        names = []
+        lift_coeff_names = []
+        lift_coeff_connects = []
+        area_names = []
+        area_connects = []
+        for part in geometry.children:
+            name = part['name']
+            
+            lift_coeff_name = '{}_group_lift_coeff'.format(name)
+            src_lift_coeff_name = '{}_group.lift_coeff'.format(name)
+            area_name = '{}_group_area'.format(name)
+            src_area_name = '{}_group._area'.format(name)
+
+            lift_coeff_names.append(lift_coeff_name)
+            lift_coeff_connects.append((src_lift_coeff_name, lift_coeff_name))
+
+            area_names.append(area_name)
+            area_connects.append((src_area_name, area_name))
+
+            names.append(name)
+
+        comp = LinearPowerCombinationComp(
             shape=shape,
-            out_name='total_lift',
-            coeffs_dict=dict(zip(lift_names, [1.] * len(lift_names))),
+            out_name='lift_coeff',
+            terms_list=[
+                (1., {
+                    lift_coeff_name: 1.,
+                    area_name: 1.,
+                    'ref_area': -1.,
+                })
+                for lift_coeff_name, area_name in zip(lift_coeff_names, area_names)
+            ],
         )
-        self.add_subsystem('total_lift_comp', comp, promotes=['*'])
+        self.add_subsystem('lift_coeff_comp', comp, promotes=['*'])
 
-        comp = LinearCombinationComp(
+        comp = LinearPowerCombinationComp(
             shape=shape,
-            out_name='total_drag',
-            coeffs_dict=dict(zip(drag_names, [1.] * len(drag_names))),
+            out_name='drag_coeff',
+            terms_list=[
+                (1., {
+                    '{}_group_induced_drag_coeff'.format(name): 1.,
+                    area_name: 1.,
+                    'ref_area': -1.,
+                })
+                for name, area_name in zip(names, area_names)
+            ] + [
+                (1., {
+                    '{}_group_parasite_drag_coeff'.format(name): 1.,
+                    # area_name: 0.,
+                    # 'ref_area': 0.,
+                })
+                for name, area_name in zip(names, area_names)
+            ] + [
+                (1., {
+                    '{}_group_wave_drag_coeff'.format(name): 1.,
+                    area_name: 1.,
+                    'ref_area': -1.,
+                })
+                for name, area_name in zip(names, area_names)
+            ],
         )
-        self.add_subsystem('total_drag_comp', comp, promotes=['*'])
+        self.add_subsystem('drag_coeff_comp', comp, promotes=['*'])
 
-        comp = ForceCoeffComp(
+        comp = PowerCombinationComp(
             shape=shape,
-            coeff_name='total_lift_coeff',
-            force_name='total_lift',
-            area_name='area',
+            out_name='lift_to_drag_ratio',
+            powers_dict=dict(
+                lift_coeff=1.,
+                drag_coeff=-1.,
+            ),
         )
-        self.add_subsystem('total_lift_coeff_comp', comp, promotes=['*'])
+        self.add_subsystem('lift_to_drag_ratio_comp', comp, promotes=['*'])
+        
+        for src, tgt in lift_coeff_connects:
+            self.connect(src, tgt)
 
-        comp = ForceCoeffComp(
-            shape=shape,
-            coeff_name='total_drag_coeff',
-            force_name='total_drag',
-            area_name='area',
-        )
-        self.add_subsystem('total_drag_coeff_comp', comp, promotes=['*'])
-        for lifting_surface in aircraft['lifting_surfaces']:
-            name = lifting_surface['name']
+        for src, tgt in area_connects:
+            self.connect(src, tgt)
+
+        for name in names:
             self.connect(
-                '{}_aerodynamics_group.drag'.format(name),
-                '{}_aerodynamics_group_drag'.format(name),
+                '{}_group.induced_drag_coeff'.format(name),
+                '{}_group_induced_drag_coeff'.format(name),
             )
             self.connect(
-                '{}_aerodynamics_group.lift'.format(name),
-                '{}_aerodynamics_group_lift'.format(name),
+                '{}_group.parasite_drag_coeff'.format(name),
+                '{}_group_parasite_drag_coeff'.format(name),
             )
-        for nonlifting_surface in aircraft['nonlifting_surfaces']:
-            name = nonlifting_surface['name']
             self.connect(
-                '{}_aerodynamics_group.drag'.format(name),
-                '{}_aerodynamics_group_drag'.format(name),
+                '{}_group.wave_drag_coeff'.format(name),
+                '{}_group_wave_drag_coeff'.format(name),
             )

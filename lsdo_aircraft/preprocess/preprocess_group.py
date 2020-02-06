@@ -9,7 +9,7 @@ class PreprocessGroup(Group):
 
     def initialize(self):
         self.options.declare('shape', types=tuple)
-        self.options.declare('module')
+        self.options.declare('options_dictionary')
 
         self.promotes = None
 
