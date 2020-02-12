@@ -72,7 +72,7 @@ class AerodynamicsGroup(Group):
                 group.add_subsystem('area_comp', comp, promotes=['*'])
             else:
                 comp = IndepVarComp()
-                comp.add_output('_area')
+                comp.add_output('_area', shape=shape)
                 group.add_subsystem('area_comp', comp, promotes=['*'])
 
             # Cosine of sweep - useful for many calculations that follow

@@ -23,7 +23,7 @@ class InducedDragGroup(Group):
             shape=shape, 
             out_name='sweep_capped_30', 
             in_names=['sweep', 'sweep_30'], 
-            rho=10.,
+            rho=50.,
         )
         self.add_subsystem('sweep_capped_30_comp', comp, promotes=['*'])
 
@@ -59,7 +59,7 @@ class InducedDragGroup(Group):
             shape=shape,
             out_name='oswald_efficiency',
             terms_list=[
-                (1. / (30. * np.pi / 180.), dict(
+                (1., dict(
                     oswald_efficiency_unswept=1.,
                 )),
                 (-1. / (30. * np.pi / 180.), dict(
