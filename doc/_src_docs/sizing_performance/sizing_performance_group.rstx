@@ -1,0 +1,11 @@
+Sizing---performance group
+==========================
+
+.. embed-options-table :: lsdo_aircraft.sizing_performance.sizing_performance_group , SizingPerformanceGroup , options
+
+Class
+-----
+
+.. autoclass:: lsdo_aircraft.sizing_performance.sizing_performance_group.SizingPerformanceGroup
+
+  .. automethod:: lsdo_aircraft.sizing_performance.sizing_performance_group.SizingPerformanceGroup.__init__

@@ -1,0 +1,11 @@
+Stall wing loading comp
+=======================
+
+.. embed-options-table :: lsdo_aircraft.sizing_performance.stall_wing_loading_comp , StallWingLoadingComp , options
+
+Class
+-----
+
+.. autoclass:: lsdo_aircraft.sizing_performance.stall_wing_loading_comp.StallWingLoadingComp
+
+  .. automethod:: lsdo_aircraft.sizing_performance.stall_wing_loading_comp.StallWingLoadingComp.__init__

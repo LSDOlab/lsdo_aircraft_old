@@ -1,0 +1,11 @@
+Landing wing loading comp
+=========================
+
+.. embed-options-table :: lsdo_aircraft.sizing_performance.landing_wing_loading_comp , LandingWingLoadingComp , options
+
+Class
+-----
+
+.. autoclass:: lsdo_aircraft.sizing_performance.landing_wing_loading_comp.LandingWingLoadingComp
+
+  .. automethod:: lsdo_aircraft.sizing_performance.landing_wing_loading_comp.LandingWingLoadingComp.__init__

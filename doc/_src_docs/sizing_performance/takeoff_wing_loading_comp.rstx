@@ -1,0 +1,11 @@
+Takeoff wing loading comp
+=========================
+
+.. embed-options-table :: lsdo_aircraft.sizing_performance.takeoff_wing_loading_comp , PropellerTakeoffWingLoadingComp , options
+
+Class
+-----
+
+.. autoclass:: lsdo_aircraft.sizing_performance.takeoff_wing_loading_comp.PropellerTakeoffWingLoadingComp
+
+  .. automethod:: lsdo_aircraft.sizing_performance.takeoff_wing_loading_comp.PropellerTakeoffWingLoadingComp.__init__
